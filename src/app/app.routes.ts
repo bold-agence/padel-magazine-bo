@@ -18,6 +18,8 @@ import { VideosComponent } from './pages/ui-elements/videos/videos.component';
 import { SignInComponent } from './pages/auth-pages/sign-in/sign-in.component';
 import { SignUpComponent } from './pages/auth-pages/sign-up/sign-up.component';
 import { CalenderComponent } from './pages/calender/calender.component';
+import { AdminLayoutComponent } from './shared/layout/admin/admin-layout/admin-layout.component';
+import { AdminDashboardComponent } from './pages/admin/dashboard/admin-dashboard.component';
 
 export const routes: Routes = [
   {
@@ -114,6 +116,18 @@ export const routes: Routes = [
     path:'signup',
     component:SignUpComponent,
     title:'Angular Sign Up Dashboard | TailAdmin - Angular Admin Dashboard Template'
+  },
+  {
+    path: 'admin',
+    component: AdminLayoutComponent,
+    children: [
+      {
+        path: '',
+        component: AdminDashboardComponent,
+        pathMatch: 'full',
+        title: 'Admin Dashboard | Padel Magazine',
+      },
+    ],
   },
   // error pages
   {
