@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { SidebarService } from '../../../services/sidebar.service';
 import { SafeHtmlPipe } from '../../../pipe/safe-html.pipe';
 import { AdminSidebarWidgetComponent } from './admin-sidebar-widget.component';
+import { AuthService } from '../../../../core/services/auth.service';
 
 type NavItem = {
   name: string;
@@ -84,6 +85,7 @@ export class AdminSidebarComponent {
   constructor(
     public sidebarService: SidebarService,
     private router: Router,
+    private authService: AuthService,
   ) {
     this.isExpanded$ = this.sidebarService.isExpanded$;
     this.isMobileOpen$ = this.sidebarService.isMobileOpen$;
@@ -124,5 +126,11 @@ export class AdminSidebarComponent {
         this.sidebarService.setMobileOpen(false);
       }
     }).unsubscribe();
+  }
+
+  logout() {
+    this.authService.logout();
+    this.sidebarService.setMobileOpen(false);
+    this.router.navigate(['/signin']);
   }
 }
