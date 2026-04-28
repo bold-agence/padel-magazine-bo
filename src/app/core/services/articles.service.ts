@@ -113,6 +113,18 @@ export class ArticlesService {
       .pipe(map((response) => this.unwrap(response)));
   }
 
+  uploadBannerImage(file: File): Observable<string> {
+    const formData = new FormData();
+    formData.append('bannerImage', file);
+
+    return this.http
+      .post<ApiEnvelope<{ url: string }> | { url: string }>(
+        `${this.apiUrl}/banner-image`,
+        formData,
+      )
+      .pipe(map((response) => this.unwrap(response).url));
+  }
+
   findAllTags(): Observable<ArticleTag[]> {
     return this.http
       .get<ApiEnvelope<ArticleTag[]> | ArticleTag[]>(this.tagsUrl)

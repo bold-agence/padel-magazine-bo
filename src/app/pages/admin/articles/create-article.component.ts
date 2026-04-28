@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { of, switchMap } from 'rxjs';
 import { ButtonComponent } from '../../../shared/components/ui/button/button.component';
 import { InputFieldComponent } from '../../../shared/components/form/input/input-field.component';
 import { LabelComponent } from '../../../shared/components/form/label/label.component';
@@ -39,7 +40,6 @@ type CreateArticleForm = {
   author: string;
   date: string;
   readingTime: string;
-  bannerImage: string;
   categoryId: string;
 };
 
@@ -68,6 +68,8 @@ export class CreateArticleComponent implements OnInit {
   allTags: ArticleTag[] = [];
   selectedTags: string[] = [];
   tagInput = '';
+  bannerImageFile: File | null = null;
+  bannerImageFileName = '';
 
   form: CreateArticleForm = {
     isVisible: true,
@@ -76,7 +78,6 @@ export class CreateArticleComponent implements OnInit {
     author: '',
     date: '',
     readingTime: '',
-    bannerImage: '',
     categoryId: '',
   };
 
@@ -148,7 +149,20 @@ export class CreateArticleComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    this.articlesService.create(payload).subscribe({
+    const upload$ = this.bannerImageFile
+      ? this.articlesService.uploadBannerImage(this.bannerImageFile)
+      : of<string | undefined>(undefined);
+
+    upload$
+      .pipe(
+        switchMap((bannerImageUrl) =>
+          this.articlesService.create({
+            ...payload,
+            bannerImage: bannerImageUrl,
+          }),
+        ),
+      )
+      .subscribe({
       next: () => {
         this.isSaving = false;
         this.successMessage = 'Article cree avec succes.';
@@ -158,8 +172,15 @@ export class CreateArticleComponent implements OnInit {
         this.isSaving = false;
         this.errorMessage = this.parseApiError(error);
       },
-    });
+      });
   }
+  onBannerImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    this.bannerImageFile = file;
+    this.bannerImageFileName = file?.name ?? '';
+  }
+
 
   cancel(): void {
     this.router.navigate(['/admin/articles']);
@@ -261,7 +282,6 @@ export class CreateArticleComponent implements OnInit {
       author,
       date,
       readingTime,
-      bannerImage: this.form.bannerImage.trim() || undefined,
       categoryId: this.form.categoryId.trim() || undefined,
       tags,
       sections,

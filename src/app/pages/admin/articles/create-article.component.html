@@ -48,8 +48,18 @@
         <app-input-field [(value)]="form.readingTime" placeholder="6 min" />
       </div>
       <div class="md:col-span-2">
-        <app-label>Banniere (URL)</app-label>
-        <app-input-field [(value)]="form.bannerImage" placeholder="https://..." />
+        <app-label>Banniere (fichier)</app-label>
+        <input
+          type="file"
+          accept="image/*"
+          (change)="onBannerImageSelected($event)"
+          class="block w-full rounded-lg border border-gray-300 p-2 text-sm dark:border-gray-700"
+        />
+        @if (bannerImageFileName) {
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Fichier selectionne: {{ bannerImageFileName }}
+          </p>
+        }
       </div>
       <div class="md:col-span-2">
         <app-label>Categorie (optionnel)</app-label>

@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { of, switchMap } from 'rxjs';
 import { ButtonComponent } from '../../../shared/components/ui/button/button.component';
 import { ModalComponent } from '../../../shared/components/ui/modal/modal.component';
 import { InputFieldComponent } from '../../../shared/components/form/input/input-field.component';
@@ -22,7 +23,7 @@ type ArticleForm = {
   author: string;
   date: string;
   readingTime: string;
-  bannerImage: string;
+  bannerImageUrl: string;
   categoryId: string;
 };
 
@@ -87,6 +88,8 @@ export class ArticlesComponent implements OnInit {
   sections: SectionForm[] = [];
   selectedTags: string[] = [];
   tagInput = '';
+  bannerImageFile: File | null = null;
+  bannerImageFileName = '';
 
   constructor(
     private readonly articlesService: ArticlesService,
@@ -154,9 +157,11 @@ export class ArticlesComponent implements OnInit {
       author: article.author,
       date: this.toDateInputValue(article.date),
       readingTime: article.readingTime,
-      bannerImage: article.bannerImage ?? '',
+      bannerImageUrl: article.bannerImage ?? '',
       categoryId: article.category?.id ?? '',
     };
+    this.bannerImageFile = null;
+    this.bannerImageFileName = '';
     this.selectedTags = article.tags.map((tag) => tag.name);
     this.tagInput = '';
     this.sections = this.mapSectionsForForm(article.sections ?? []);
@@ -205,7 +210,20 @@ export class ArticlesComponent implements OnInit {
       return;
     }
 
-    this.articlesService.update(this.editingArticleId, payload).subscribe({
+    const upload$ = this.bannerImageFile
+      ? this.articlesService.uploadBannerImage(this.bannerImageFile)
+      : of<string | undefined>(this.form.bannerImageUrl || undefined);
+
+    upload$
+      .pipe(
+        switchMap((bannerImageUrl) =>
+          this.articlesService.update(this.editingArticleId!, {
+            ...payload,
+            bannerImage: bannerImageUrl,
+          }),
+        ),
+      )
+      .subscribe({
       next: () => {
         this.isSaving = false;
         this.isModalOpen = false;
@@ -215,8 +233,15 @@ export class ArticlesComponent implements OnInit {
         this.isSaving = false;
         this.modalErrorMessage = this.parseApiError(error);
       },
-    });
+      });
   }
+  onBannerImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    this.bannerImageFile = file;
+    this.bannerImageFileName = file?.name ?? '';
+  }
+
 
   openDeleteModal(article: Article): void {
     this.articleToDelete = article;
@@ -370,7 +395,7 @@ export class ArticlesComponent implements OnInit {
       author,
       date,
       readingTime,
-      bannerImage: this.form.bannerImage.trim() || undefined,
+      bannerImage: this.form.bannerImageUrl.trim() || undefined,
       categoryId: this.form.categoryId.trim() || undefined,
       tags,
       sections,
@@ -385,7 +410,7 @@ export class ArticlesComponent implements OnInit {
       author: '',
       date: '',
       readingTime: '',
-      bannerImage: '',
+      bannerImageUrl: '',
       categoryId: '',
     };
   }
