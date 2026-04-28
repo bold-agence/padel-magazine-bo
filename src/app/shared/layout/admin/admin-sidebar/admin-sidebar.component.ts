@@ -51,11 +51,6 @@ export class AdminSidebarComponent {
       icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none"><path d="M7 7.5H17M7 12H15M7 16.5H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="4.75" y="4.75" width="14.5" height="14.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/></svg>`,
     },
     {
-      name: 'Joueurs',
-      path: '/admin/joueurs',
-      icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none"><path d="M15.5 8.75C15.5 10.683 13.933 12.25 12 12.25C10.067 12.25 8.5 10.683 8.5 8.75C8.5 6.817 10.067 5.25 12 5.25C13.933 5.25 15.5 6.817 15.5 8.75Z" stroke="currentColor" stroke-width="1.5"/><path d="M6.75 18.75C6.75 16.2647 8.76472 14.25 11.25 14.25H12.75C15.2353 14.25 17.25 16.2647 17.25 18.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
-    },
-    {
       name: 'Live',
       path: '/admin/live',
       icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M5.5 12C5.5 8.41015 8.41015 5.5 12 5.5M18.5 12C18.5 15.5899 15.5899 18.5 12 18.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M3.75 12C3.75 7.44365 7.44365 3.75 12 3.75M20.25 12C20.25 16.5563 16.5563 20.25 12 20.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
@@ -72,8 +67,13 @@ export class AdminSidebarComponent {
     },
     {
       name: 'Parametres',
-      path: '/admin/settings',
       icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none"><path d="M12 9.25C10.4812 9.25 9.25 10.4812 9.25 12C9.25 13.5188 10.4812 14.75 12 14.75C13.5188 14.75 14.75 13.5188 14.75 12C14.75 10.4812 13.5188 9.25 12 9.25Z" stroke="currentColor" stroke-width="1.5"/><path d="M19.25 12C19.25 11.5094 19.2098 11.0283 19.1326 10.5599L21 9.25L19.25 6.25L17.11 6.86C16.3899 6.25316 15.5452 5.78902 14.625 5.5L14.25 3.25H9.75L9.375 5.5C8.4548 5.78902 7.61012 6.25316 6.89 6.86L4.75 6.25L3 9.25L4.8674 10.5599C4.79022 11.0283 4.75 11.5094 4.75 12C4.75 12.4906 4.79022 12.9717 4.8674 13.4401L3 14.75L4.75 17.75L6.89 17.14C7.61012 17.7468 8.4548 18.211 9.375 18.5L9.75 20.75H14.25L14.625 18.5C15.5452 18.211 16.3899 17.7468 17.11 17.14L19.25 17.75L21 14.75L19.1326 13.4401C19.2098 12.9717 19.25 12.4906 19.25 12Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>`,
+      subItems: [
+        {
+          name: 'Joueurs',
+          path: '/admin/settings/players',
+        },
+      ],
     },
   ];
   openSubmenu: string | null = null;

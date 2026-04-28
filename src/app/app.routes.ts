@@ -21,6 +21,7 @@ import { CalenderComponent } from './pages/calender/calender.component';
 import { AdminLayoutComponent } from './shared/layout/admin/admin-layout/admin-layout.component';
 import { AdminDashboardComponent } from './pages/admin/dashboard/admin-dashboard.component';
 import { authGuard } from './core/guards/auth.guard';
+import { PlayersComponent } from './pages/admin/settings/players/players.component';
 
 export const routes: Routes = [
   {
@@ -128,6 +129,11 @@ export const routes: Routes = [
         component: AdminDashboardComponent,
         pathMatch: 'full',
         title: 'Admin Dashboard | Padel Magazine',
+      },
+      {
+        path: 'settings/players',
+        component: PlayersComponent,
+        title: 'Parametres - Joueurs | Padel Magazine Admin',
       },
     ],
   },
