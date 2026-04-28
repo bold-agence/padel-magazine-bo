@@ -36,6 +36,7 @@ export class AdminSidebarComponent {
       icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none"><path d="M7 6.75H17M7 12H17M7 17.25H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/></svg>`,
       subItems: [
         { name: 'Categories', path: '/admin/articles/categories' },
+        { name: 'Tags', path: '/admin/articles/tags' },
         { name: 'Liste des articles', path: '/admin/articles' },
         { name: 'Creer un article', path: '/admin/articles/create' },
       ],

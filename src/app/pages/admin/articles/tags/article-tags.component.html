@@ -1,0 +1,122 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Tags</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        Gestion CRUD des tags d'articles.
+      </p>
+    </div>
+    <app-button size="sm" (btnClick)="openCreateModal()">Ajouter un tag</app-button>
+  </div>
+
+  @if (errorMessage) {
+    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      {{ errorMessage }}
+    </div>
+  }
+
+  @if (successMessage) {
+    <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+      {{ successMessage }}
+    </div>
+  }
+
+  <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-800/50">
+        <tr>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Tag</th>
+          <th class="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (isLoading) {
+          <tr>
+            <td colspan="2" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+              Chargement...
+            </td>
+          </tr>
+        } @else if (!tags.length) {
+          <tr>
+            <td colspan="2" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+              Aucun tag detecte.
+            </td>
+          </tr>
+        } @else {
+          @for (tag of tags; track tag.name) {
+            <tr class="border-t border-gray-100 dark:border-gray-800">
+              <td class="px-4 py-3 text-gray-900 dark:text-white">{{ tag.name }}</td>
+              <td class="px-4 py-3">
+                <div class="flex justify-end gap-2">
+                  <app-button
+                    size="sm"
+                    variant="outline"
+                    className="!px-3 !py-2"
+                    [disabled]="isSaving"
+                    (btnClick)="openRenameModal(tag)"
+                  >
+                    Renommer
+                  </app-button>
+                  <app-button
+                    size="sm"
+                    variant="outline"
+                    className="!px-3 !py-2 !text-red-700 !ring-red-200 hover:!bg-red-50 dark:!text-red-300 dark:!ring-red-900/40 dark:hover:!bg-red-950/30"
+                    [disabled]="isSaving"
+                    (btnClick)="deleteTag(tag)"
+                  >
+                    Supprimer
+                  </app-button>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<app-modal
+  [isOpen]="isCreateModalOpen"
+  (close)="closeCreateModal()"
+  [className]="'max-w-md p-6 lg:p-7'"
+>
+  <h2 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">Creer un tag</h2>
+  <div>
+    <app-label>Nom du tag</app-label>
+    <app-input-field [(value)]="createValue" placeholder="Nouveau tag" />
+  </div>
+  <div class="mt-6 flex justify-end gap-3">
+    <app-button variant="outline" [disabled]="isSaving" (btnClick)="closeCreateModal()">
+      Annuler
+    </app-button>
+    <app-button [disabled]="isSaving" (btnClick)="createTag()">
+      @if (isSaving) { Enregistrement... } @else { Creer }
+    </app-button>
+  </div>
+</app-modal>
+
+<app-modal
+  [isOpen]="isRenameModalOpen"
+  (close)="closeRenameModal()"
+  [className]="'max-w-md p-6 lg:p-7'"
+>
+  <h2 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">Renommer le tag</h2>
+  <p class="mb-5 text-sm text-gray-600 dark:text-gray-300">
+    Le changement est applique directement au tag.
+  </p>
+
+  <div>
+    <app-label>Nouveau nom</app-label>
+    <app-input-field [(value)]="renameValue" placeholder="Nouveau tag" />
+  </div>
+
+  <div class="mt-6 flex justify-end gap-3">
+    <app-button variant="outline" [disabled]="isSaving" (btnClick)="closeRenameModal()">
+      Annuler
+    </app-button>
+    <app-button [disabled]="isSaving" (btnClick)="renameTag()">
+      @if (isSaving) { Enregistrement... } @else { Enregistrer }
+    </app-button>
+  </div>
+</app-modal>

@@ -1,0 +1,124 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Categories</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        Gestion CRUD des categories d'articles.
+      </p>
+    </div>
+    <app-button size="sm" (btnClick)="openCreateModal()">Ajouter une categorie</app-button>
+  </div>
+
+  @if (errorMessage) {
+    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      {{ errorMessage }}
+    </div>
+  }
+
+  @if (successMessage) {
+    <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+      {{ successMessage }}
+    </div>
+  }
+
+  <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-800/50">
+        <tr>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Nom</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Slug</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Couleur</th>
+          <th class="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (isLoading) {
+          <tr>
+            <td colspan="4" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+              Chargement...
+            </td>
+          </tr>
+        } @else if (!categories.length) {
+          <tr>
+            <td colspan="4" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+              Aucune categorie pour le moment.
+            </td>
+          </tr>
+        } @else {
+          @for (category of categories; track category.id) {
+            <tr class="border-t border-gray-100 dark:border-gray-800">
+              <td class="px-4 py-3 text-gray-900 dark:text-white">{{ category.name }}</td>
+              <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ category.slug }}</td>
+              <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
+                <span class="inline-flex items-center gap-2">
+                  <span
+                    class="inline-block h-3 w-3 rounded-full border border-gray-200"
+                    [style.backgroundColor]="category.color"
+                  ></span>
+                  {{ category.color }}
+                </span>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex justify-end gap-2">
+                  <app-button
+                    size="sm"
+                    variant="outline"
+                    className="!px-3 !py-2"
+                    [disabled]="isSaving"
+                    (btnClick)="openEditModal(category)"
+                  >
+                    Modifier
+                  </app-button>
+                  <app-button
+                    size="sm"
+                    variant="outline"
+                    className="!px-3 !py-2 !text-red-700 !ring-red-200 hover:!bg-red-50 dark:!text-red-300 dark:!ring-red-900/40 dark:hover:!bg-red-950/30"
+                    [disabled]="isSaving"
+                    (btnClick)="deleteCategory(category)"
+                  >
+                    Supprimer
+                  </app-button>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<app-modal [isOpen]="isModalOpen" (close)="closeModal()" [className]="'max-w-md p-6 lg:p-7'">
+  <h2 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+    @if (modalMode === 'create') { Creer une categorie } @else { Modifier la categorie }
+  </h2>
+
+  <div class="space-y-4">
+    <div>
+      <app-label>Nom</app-label>
+      <app-input-field [value]="form.name" (valueChange)="onNameChange($event)" placeholder="Actualites" />
+    </div>
+    <div>
+      <app-label>Slug</app-label>
+      <app-input-field [(value)]="form.slug" placeholder="actualites" />
+    </div>
+    <div>
+      <app-label>Couleur</app-label>
+      <div class="flex items-center gap-2">
+        <input
+          type="color"
+          [(ngModel)]="form.color"
+          class="h-11 w-14 rounded border border-gray-300 bg-transparent p-1 dark:border-gray-700"
+        />
+        <app-input-field [(value)]="form.color" placeholder="#2563eb" />
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-6 flex justify-end gap-3">
+    <app-button variant="outline" [disabled]="isSaving" (btnClick)="closeModal()">Annuler</app-button>
+    <app-button [disabled]="isSaving" (btnClick)="submitModal()">
+      @if (isSaving) { Enregistrement... } @else { Enregistrer }
+    </app-button>
+  </div>
+</app-modal>

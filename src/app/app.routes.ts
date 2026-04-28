@@ -22,6 +22,10 @@ import { AdminLayoutComponent } from './shared/layout/admin/admin-layout/admin-l
 import { AdminDashboardComponent } from './pages/admin/dashboard/admin-dashboard.component';
 import { authGuard } from './core/guards/auth.guard';
 import { PlayersComponent } from './pages/admin/settings/players/players.component';
+import { ArticlesComponent } from './pages/admin/articles/articles.component';
+import { ArticleTagsComponent } from './pages/admin/articles/tags/article-tags.component';
+import { CreateArticleComponent } from './pages/admin/articles/create-article.component';
+import { ArticleCategoriesComponent } from './pages/admin/articles/categories/article-categories.component';
 
 export const routes: Routes = [
   {
@@ -134,6 +138,26 @@ export const routes: Routes = [
         path: 'settings/players',
         component: PlayersComponent,
         title: 'Parametres - Joueurs | Padel Magazine Admin',
+      },
+      {
+        path: 'articles',
+        component: ArticlesComponent,
+        title: 'Articles | Padel Magazine Admin',
+      },
+      {
+        path: 'articles/create',
+        component: CreateArticleComponent,
+        title: 'Creer un article | Padel Magazine Admin',
+      },
+      {
+        path: 'articles/tags',
+        component: ArticleTagsComponent,
+        title: 'Tags des articles | Padel Magazine Admin',
+      },
+      {
+        path: 'articles/categories',
+        component: ArticleCategoriesComponent,
+        title: 'Categories des articles | Padel Magazine Admin',
       },
     ],
   },
