@@ -207,8 +207,29 @@
 
                 @if (section.type === 'image') {
                   <div class="md:col-span-2">
-                    <app-label>Image URL</app-label>
-                    <app-input-field [(value)]="section.imageUrl" placeholder="https://..." />
+                    <app-label>Image (fichier)</app-label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      (change)="onSectionImageSelected($index, $event)"
+                      class="block w-full rounded-lg border border-gray-300 p-2 text-sm dark:border-gray-700"
+                    />
+                    @if (section.imageFileName) {
+                      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Fichier selectionne: {{ section.imageFileName }}
+                      </p>
+                    } @else if (section.imageUrl) {
+                      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Image actuelle: {{ section.imageUrl }}
+                      </p>
+                    }
+                    @if (section.imagePreviewUrl || section.imageUrl) {
+                      <img
+                        [src]="section.imagePreviewUrl || section.imageUrl"
+                        alt="Apercu section"
+                        class="mt-2 h-28 w-full rounded-lg object-cover"
+                      />
+                    }
                   </div>
                 }
 
@@ -235,6 +256,13 @@
                       [(ngModel)]="section.spacerHeight"
                       class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 outline-none focus:border-brand-300 dark:border-gray-700 dark:text-white/90"
                     />
+                  </div>
+                }
+
+                @if (section.type === 'info_box') {
+                  <div class="md:col-span-2">
+                    <app-label>Titre de l'encadre</app-label>
+                    <app-input-field [(value)]="section.infoBoxTitle" placeholder="Info importante" />
                   </div>
                 }
 

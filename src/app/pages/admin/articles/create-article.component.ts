@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { of, switchMap } from 'rxjs';
+import { forkJoin, map, of, switchMap } from 'rxjs';
 import { ButtonComponent } from '../../../shared/components/ui/button/button.component';
 import { InputFieldComponent } from '../../../shared/components/form/input/input-field.component';
 import { LabelComponent } from '../../../shared/components/form/label/label.component';
@@ -28,9 +28,13 @@ type SectionForm = {
   content: string;
   headingLevel: number | null;
   imageUrl: string;
+  imageFile: File | null;
+  imageFileName: string;
+  imagePreviewUrl: string;
   imageCaption: string;
   quoteAuthor: string;
   spacerHeight: number | null;
+  infoBoxTitle: string;
 };
 
 type CreateArticleForm = {
@@ -132,16 +136,14 @@ export class CreateArticleComponent implements OnInit {
       ...this.createDefaultSection(current.order),
       type: current.type,
       content: current.content,
+      infoBoxTitle: current.infoBoxTitle,
+      imageUrl: current.imageUrl,
+      imagePreviewUrl: current.imagePreviewUrl,
     };
   }
 
   submit(): void {
     if (this.isSaving) {
-      return;
-    }
-
-    const payload = this.buildPayload();
-    if (!payload) {
       return;
     }
 
@@ -156,22 +158,35 @@ export class CreateArticleComponent implements OnInit {
     upload$
       .pipe(
         switchMap((bannerImageUrl) =>
-          this.articlesService.create({
+          this.resolveSectionImageUploads().pipe(
+            map((resolvedSections) => ({ bannerImageUrl, resolvedSections })),
+          ),
+        ),
+        switchMap(({ bannerImageUrl, resolvedSections }) => {
+          const payload = this.buildPayload(resolvedSections);
+          if (!payload) {
+            throw new Error('FORM_INVALID');
+          }
+
+          return this.articlesService.create({
             ...payload,
             bannerImage: bannerImageUrl,
-          }),
-        ),
+          });
+        }),
       )
       .subscribe({
-      next: () => {
-        this.isSaving = false;
-        this.successMessage = 'Article cree avec succes.';
-        this.router.navigate(['/admin/articles']);
-      },
-      error: (error: unknown) => {
-        this.isSaving = false;
-        this.errorMessage = this.parseApiError(error);
-      },
+        next: () => {
+          this.isSaving = false;
+          this.successMessage = 'Article cree avec succes.';
+          this.router.navigate(['/admin/articles']);
+        },
+        error: (error: unknown) => {
+          this.isSaving = false;
+          if (error instanceof Error && error.message === 'FORM_INVALID') {
+            return;
+          }
+          this.errorMessage = this.parseApiError(error);
+        },
       });
   }
   onBannerImageSelected(event: Event): void {
@@ -179,6 +194,20 @@ export class CreateArticleComponent implements OnInit {
     const file = input.files?.[0] ?? null;
     this.bannerImageFile = file;
     this.bannerImageFileName = file?.name ?? '';
+  }
+
+  onSectionImageSelected(index: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    const section = this.sections[index];
+    if (!section) {
+      return;
+    }
+    section.imageFile = file;
+    section.imageFileName = file?.name ?? '';
+    section.imagePreviewUrl = file
+      ? URL.createObjectURL(file)
+      : section.imageUrl || '';
   }
 
 
@@ -250,7 +279,7 @@ export class CreateArticleComponent implements OnInit {
     this.selectedTags = [...this.selectedTags, normalized];
   }
 
-  private buildPayload(): CreateArticlePayload | null {
+  private buildPayload(resolvedSections: SectionForm[]): CreateArticlePayload | null {
     const title = this.form.title.trim();
     const slug = this.form.slug.trim();
     const author = this.form.author.trim();
@@ -264,7 +293,7 @@ export class CreateArticleComponent implements OnInit {
 
     const tags = this.selectedTags.map((tag) => tag.trim()).filter(Boolean);
 
-    const sections: ArticleSection[] = this.sections.map((section, index) => ({
+    const sections: ArticleSection[] = resolvedSections.map((section, index) => ({
       type: section.type,
       order: index,
       content: section.content.trim() || undefined,
@@ -273,6 +302,7 @@ export class CreateArticleComponent implements OnInit {
       imageCaption: section.imageCaption.trim() || undefined,
       quoteAuthor: section.quoteAuthor.trim() || undefined,
       spacerHeight: section.spacerHeight ?? undefined,
+      infoBoxTitle: section.infoBoxTitle.trim() || undefined,
     }));
 
     return {
@@ -295,10 +325,33 @@ export class CreateArticleComponent implements OnInit {
       content: '',
       headingLevel: 2,
       imageUrl: '',
+      imageFile: null,
+      imageFileName: '',
+      imagePreviewUrl: '',
       imageCaption: '',
       quoteAuthor: '',
       spacerHeight: 24,
+      infoBoxTitle: '',
     };
+  }
+
+  private resolveSectionImageUploads() {
+    const uploads = this.sections.map((section) => {
+      if (section.type !== 'image' || !section.imageFile) {
+        return of(section.imageUrl || '');
+      }
+      return this.articlesService.uploadBannerImage(section.imageFile);
+    });
+
+    return forkJoin(uploads).pipe(
+      map((uploadedUrls) =>
+        this.sections.map((section, index) => ({
+          ...section,
+          imageUrl: uploadedUrls[index] ?? section.imageUrl,
+          imagePreviewUrl: uploadedUrls[index] ?? section.imagePreviewUrl,
+        })),
+      ),
+    );
   }
 
   private reindexSections(): void {

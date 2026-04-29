@@ -25,6 +25,7 @@ export type ArticleSection = {
   imageCaption?: string;
   quoteAuthor?: string;
   spacerHeight?: number;
+  infoBoxTitle?: string;
   data?: Record<string, unknown>;
 };
 

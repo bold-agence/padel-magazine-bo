@@ -1,6 +1,6 @@
 <!-- Only render if open -->
 @if (isOpen) {
-<div class="fixed inset-0 flex items-center justify-center overflow-y-auto modal z-99999">
+<div class="fixed inset-0 z-99999 flex items-start justify-center overflow-y-auto modal py-6">
   <!-- Backdrop -->
   @if (!isFullscreen) {
   <div
@@ -10,7 +10,11 @@
   }
   <!-- Modal Content -->
   <div
-    [ngClass]="isFullscreen ? 'w-full h-full' : 'relative w-full rounded-3xl bg-white dark:bg-gray-900'"
+    [ngClass]="
+      isFullscreen
+        ? 'h-full w-full'
+        : 'relative w-full max-h-[calc(100vh-3rem)] overflow-y-auto rounded-3xl bg-white dark:bg-gray-900'
+    "
     [class]="className"
     (click)="onContentClick($event)"
   >
