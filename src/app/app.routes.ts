@@ -150,6 +150,11 @@ export const routes: Routes = [
         title: 'Creer un article | Padel Magazine Admin',
       },
       {
+        path: 'articles/:id/edit',
+        component: CreateArticleComponent,
+        title: 'Modifier un article | Padel Magazine Admin',
+      },
+      {
         path: 'articles/tags',
         component: ArticleTagsComponent,
         title: 'Tags des articles | Padel Magazine Admin',

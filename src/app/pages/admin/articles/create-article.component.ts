@@ -1,15 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, map, of, switchMap } from 'rxjs';
 import { ButtonComponent } from '../../../shared/components/ui/button/button.component';
 import { InputFieldComponent } from '../../../shared/components/form/input/input-field.component';
 import { LabelComponent } from '../../../shared/components/form/label/label.component';
 import {
-  ArticleTag,
+  Article,
   ArticleCategory,
   ArticleSection,
+  ArticleTag,
   ArticlesService,
   CreateArticlePayload,
 } from '../../../core/services/articles.service';
@@ -44,6 +45,7 @@ type CreateArticleForm = {
   author: string;
   date: string;
   readingTime: string;
+  bannerImageUrl: string;
   categoryId: string;
 };
 
@@ -64,10 +66,13 @@ export class CreateArticleComponent implements OnInit {
   ];
 
   isSaving = false;
+  isLoadingArticle = false;
+  isEditMode = false;
   isLoadingCategories = false;
   isLoadingTags = false;
   errorMessage = '';
   successMessage = '';
+  editingArticleId: string | null = null;
   categories: ArticleCategory[] = [];
   allTags: ArticleTag[] = [];
   selectedTags: string[] = [];
@@ -82,6 +87,7 @@ export class CreateArticleComponent implements OnInit {
     author: '',
     date: '',
     readingTime: '',
+    bannerImageUrl: '',
     categoryId: '',
   };
 
@@ -89,12 +95,23 @@ export class CreateArticleComponent implements OnInit {
 
   constructor(
     private readonly articlesService: ArticlesService,
+    private readonly route: ActivatedRoute,
     private readonly router: Router,
   ) {}
 
   ngOnInit(): void {
     this.loadCategories();
     this.loadTags();
+    this.route.paramMap.subscribe((params) => {
+      const id = params.get('id');
+      this.isEditMode = Boolean(id);
+      this.editingArticleId = id;
+      if (id) {
+        this.loadArticle(id);
+      } else {
+        this.resetForm();
+      }
+    });
   }
 
   onTitleChange(value: string | number): void {
@@ -153,7 +170,7 @@ export class CreateArticleComponent implements OnInit {
 
     const upload$ = this.bannerImageFile
       ? this.articlesService.uploadBannerImage(this.bannerImageFile)
-      : of<string | undefined>(undefined);
+      : of<string | undefined>(this.form.bannerImageUrl || undefined);
 
     upload$
       .pipe(
@@ -168,6 +185,13 @@ export class CreateArticleComponent implements OnInit {
             throw new Error('FORM_INVALID');
           }
 
+          if (this.isEditMode && this.editingArticleId) {
+            return this.articlesService.update(this.editingArticleId, {
+              ...payload,
+              bannerImage: bannerImageUrl,
+            });
+          }
+
           return this.articlesService.create({
             ...payload,
             bannerImage: bannerImageUrl,
@@ -177,7 +201,9 @@ export class CreateArticleComponent implements OnInit {
       .subscribe({
         next: () => {
           this.isSaving = false;
-          this.successMessage = 'Article cree avec succes.';
+          this.successMessage = this.isEditMode
+            ? 'Article modifie avec succes.'
+            : 'Article cree avec succes.';
           this.router.navigate(['/admin/articles']);
         },
         error: (error: unknown) => {
@@ -237,6 +263,35 @@ export class CreateArticleComponent implements OnInit {
       },
       error: () => {
         this.isLoadingTags = false;
+      },
+    });
+  }
+
+  private loadArticle(id: string): void {
+    this.isLoadingArticle = true;
+    this.errorMessage = '';
+    this.articlesService.findOne(id).subscribe({
+      next: (article: Article) => {
+        this.form = {
+          isVisible: article.isVisible,
+          title: article.title,
+          slug: article.slug,
+          author: article.author,
+          date: this.toDateInputValue(article.date),
+          readingTime: article.readingTime,
+          bannerImageUrl: article.bannerImage ?? '',
+          categoryId: article.category?.id ?? '',
+        };
+        this.bannerImageFile = null;
+        this.bannerImageFileName = '';
+        this.selectedTags = article.tags.map((tag) => tag.name);
+        this.tagInput = '';
+        this.sections = this.mapSectionsForForm(article.sections ?? []);
+        this.isLoadingArticle = false;
+      },
+      error: () => {
+        this.errorMessage = "Impossible de charger l'article.";
+        this.isLoadingArticle = false;
       },
     });
   }
@@ -335,6 +390,28 @@ export class CreateArticleComponent implements OnInit {
     };
   }
 
+  private mapSectionsForForm(sections: ArticleSection[]): SectionForm[] {
+    if (!sections.length) {
+      return [this.createDefaultSection(0)];
+    }
+
+    const sorted = [...sections].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    return sorted.map((section, index) => ({
+      type: (section.type as SectionType) ?? 'paragraph',
+      order: index,
+      content: section.content ?? '',
+      headingLevel: section.headingLevel ?? 2,
+      imageUrl: section.imageUrl ?? '',
+      imageFile: null,
+      imageFileName: '',
+      imagePreviewUrl: section.imageUrl ?? '',
+      imageCaption: section.imageCaption ?? '',
+      quoteAuthor: section.quoteAuthor ?? '',
+      spacerHeight: section.spacerHeight ?? 24,
+      infoBoxTitle: section.infoBoxTitle ?? '',
+    }));
+  }
+
   private resolveSectionImageUploads() {
     const uploads = this.sections.map((section) => {
       if (section.type !== 'image' || !section.imageFile) {
@@ -359,6 +436,30 @@ export class CreateArticleComponent implements OnInit {
       ...section,
       order: index,
     }));
+  }
+
+  private resetForm(): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.bannerImageFile = null;
+    this.bannerImageFileName = '';
+    this.selectedTags = [];
+    this.tagInput = '';
+    this.form = {
+      isVisible: true,
+      title: '',
+      slug: '',
+      author: '',
+      date: '',
+      readingTime: '',
+      bannerImageUrl: '',
+      categoryId: '',
+    };
+    this.sections = [this.createDefaultSection(0)];
+  }
+
+  private toDateInputValue(value: string): string {
+    return value ? value.slice(0, 10) : '';
   }
 
   private parseApiError(error: unknown): string {
