@@ -11,7 +11,7 @@ import { Component } from '@angular/core';
         Admin Padel Magazine
       </h3>
       <p class="mb-4 text-gray-500 text-theme-sm dark:text-gray-400">
-        Espace de gestion du contenu et des donnees.
+        Espace de gestion du contenu et des données.
       </p>
     </div>
   `,

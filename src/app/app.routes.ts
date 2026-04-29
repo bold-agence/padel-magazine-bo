@@ -29,6 +29,12 @@ import { ArticleCategoriesComponent } from './pages/admin/articles/categories/ar
 
 export const routes: Routes = [
   {
+    path: '',
+    pathMatch: 'full',
+    redirectTo: 'admin',
+  },
+  /*
+  {
     path:'',
     component:AppLayoutComponent,
     children:[
@@ -111,6 +117,7 @@ export const routes: Routes = [
       },
     ]
   },
+  */
   // auth pages
   {
     path:'signin',
