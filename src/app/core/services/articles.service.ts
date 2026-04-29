@@ -67,6 +67,17 @@ export type CreateCategoryPayload = {
   color: string;
 };
 export type UpdateCategoryPayload = Partial<CreateCategoryPayload>;
+export type PaginatedArticlesResponse = {
+  items: Article[];
+  pagination: {
+    page: number;
+    limit: number;
+    totalItems: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+};
 
 type ApiEnvelope<T> = {
   success: boolean;
@@ -87,6 +98,14 @@ export class ArticlesService {
   findAll(): Observable<Article[]> {
     return this.http
       .get<ApiEnvelope<Article[]> | Article[]>(this.apiUrl)
+      .pipe(map((response) => this.unwrap(response)));
+  }
+
+  findPaginated(page = 1, limit = 10): Observable<PaginatedArticlesResponse> {
+    return this.http
+      .get<ApiEnvelope<PaginatedArticlesResponse> | PaginatedArticlesResponse>(
+        `${this.apiUrl}/paginated?page=${page}&limit=${limit}&category=all&includeHidden=true`,
+      )
       .pipe(map((response) => this.unwrap(response)));
   }
 

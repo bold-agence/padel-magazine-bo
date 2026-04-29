@@ -78,6 +78,39 @@
       </tbody>
     </table>
   </div>
+
+  @if (!isLoading && !errorMessage && totalPages > 1) {
+    <div class="flex items-center justify-center gap-2">
+      <button
+        type="button"
+        (click)="goToPage(currentPage - 1)"
+        [disabled]="!hasPreviousPage"
+        class="inline-flex h-9 min-w-9 items-center justify-center rounded-md border border-gray-300 px-2 text-sm text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-200"
+      >
+        ‹
+      </button>
+      @for (page of pageNumbers; track page) {
+        <button
+          type="button"
+          (click)="goToPage(page)"
+          [class.bg-brand-500]="page === currentPage"
+          [class.text-white]="page === currentPage"
+          [class.border-brand-500]="page === currentPage"
+          class="inline-flex h-9 min-w-9 items-center justify-center rounded-md border border-gray-300 px-2 text-sm text-gray-700 dark:border-gray-700 dark:text-gray-200"
+        >
+          {{ page }}
+        </button>
+      }
+      <button
+        type="button"
+        (click)="goToPage(currentPage + 1)"
+        [disabled]="!hasNextPage"
+        class="inline-flex h-9 min-w-9 items-center justify-center rounded-md border border-gray-300 px-2 text-sm text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-200"
+      >
+        ›
+      </button>
+    </div>
+  }
 </div>
 
 <app-modal
