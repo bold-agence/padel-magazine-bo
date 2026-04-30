@@ -26,6 +26,7 @@ import { ArticlesComponent } from './pages/admin/articles/articles.component';
 import { ArticleTagsComponent } from './pages/admin/articles/tags/article-tags.component';
 import { CreateArticleComponent } from './pages/admin/articles/create-article.component';
 import { ArticleCategoriesComponent } from './pages/admin/articles/categories/article-categories.component';
+import { ClientContentComponent } from './pages/admin/client-content/client-content.component';
 
 export const routes: Routes = [
   {
@@ -170,6 +171,11 @@ export const routes: Routes = [
         path: 'articles/categories',
         component: ArticleCategoriesComponent,
         title: 'Categories des articles | Padel Magazine Admin',
+      },
+      {
+        path: 'client-content',
+        component: ClientContentComponent,
+        title: 'Contenu client | Padel Magazine Admin',
       },
     ],
   },

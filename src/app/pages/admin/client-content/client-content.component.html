@@ -1,0 +1,231 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Contenu client</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        Gestion des breaking news du header et des images publicitaires header/sidebar.
+      </p>
+    </div>
+  </div>
+
+  @if (errorMessage) {
+    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      {{ errorMessage }}
+    </div>
+  }
+
+  @if (successMessage) {
+    <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+      {{ successMessage }}
+    </div>
+  }
+
+  <div class="space-y-4 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+    <div class="flex items-center justify-between">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Breaking news</h2>
+      <app-button size="sm" (btnClick)="openCreateBreakingModal()">Ajouter</app-button>
+    </div>
+    <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800">
+      <table class="min-w-full text-sm">
+        <thead class="bg-gray-50 dark:bg-gray-800/50">
+          <tr>
+            <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Titre</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">URL</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Actif</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Ordre</th>
+            <th class="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (isLoading) {
+            <tr>
+              <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Chargement...</td>
+            </tr>
+          } @else if (!breakingNews.length) {
+            <tr>
+              <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Aucun item.</td>
+            </tr>
+          } @else {
+            @for (item of breakingNews; track item.id) {
+              <tr class="border-t border-gray-100 dark:border-gray-800">
+                <td class="px-4 py-3 text-gray-900 dark:text-white">{{ item.title }}</td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ item.linkUrl || '-' }}</td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ item.isActive ? 'Oui' : 'Non' }}</td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ item.displayOrder }}</td>
+                <td class="px-4 py-3">
+                  <div class="flex justify-end gap-2">
+                    <app-button size="sm" variant="outline" (btnClick)="openEditBreakingModal(item)">
+                      Modifier
+                    </app-button>
+                    <app-button
+                      size="sm"
+                      variant="outline"
+                      className="!text-red-700 !ring-red-200 hover:!bg-red-50"
+                      (btnClick)="deleteBreakingNews(item)"
+                    >
+                      Supprimer
+                    </app-button>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="space-y-4 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+    <div class="flex items-center justify-between">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Images publicitaires</h2>
+      <app-button size="sm" (btnClick)="openCreateAdModal()">Ajouter</app-button>
+    </div>
+    <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800">
+      <table class="min-w-full text-sm">
+        <thead class="bg-gray-50 dark:bg-gray-800/50">
+          <tr>
+            <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Titre</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Slot</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Image</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Actif</th>
+            <th class="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (isLoading) {
+            <tr>
+              <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Chargement...</td>
+            </tr>
+          } @else if (!adImages.length) {
+            <tr>
+              <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Aucun encart.</td>
+            </tr>
+          } @else {
+            @for (item of adImages; track item.id) {
+              <tr class="border-t border-gray-100 dark:border-gray-800">
+                <td class="px-4 py-3 text-gray-900 dark:text-white">{{ item.title }}</td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ item.slot }}</td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ item.imageUrl }}</td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ item.isActive ? 'Oui' : 'Non' }}</td>
+                <td class="px-4 py-3">
+                  <div class="flex justify-end gap-2">
+                    <app-button size="sm" variant="outline" (btnClick)="openEditAdModal(item)">
+                      Modifier
+                    </app-button>
+                    <app-button
+                      size="sm"
+                      variant="outline"
+                      className="!text-red-700 !ring-red-200 hover:!bg-red-50"
+                      (btnClick)="deleteAdImage(item)"
+                    >
+                      Supprimer
+                    </app-button>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<app-modal [isOpen]="isBreakingModalOpen" (close)="closeBreakingModal()" [className]="'max-w-lg p-6 lg:p-7'">
+  <h2 class="mb-3 text-lg font-semibold text-gray-900 dark:text-white">
+    @if (editingBreakingId) { Modifier un breaking news } @else { Creer un breaking news }
+  </h2>
+  <div class="grid grid-cols-1 gap-3">
+    <div>
+      <app-label>Titre</app-label>
+      <app-input-field [(value)]="breakingForm.title" placeholder="Titre" />
+    </div>
+    <div>
+      <app-label>URL (optionnel)</app-label>
+      <app-input-field [(value)]="breakingForm.linkUrl" placeholder="https://..." />
+    </div>
+    <div>
+      <app-label>Ordre</app-label>
+      <input
+        type="number"
+        [(ngModel)]="breakingForm.displayOrder"
+        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 outline-none focus:border-brand-300 dark:border-gray-700 dark:text-white/90"
+      />
+    </div>
+    <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+      <input type="checkbox" [(ngModel)]="breakingForm.isActive" />
+      Actif
+    </label>
+  </div>
+  <div class="mt-6 flex justify-end gap-3">
+    <app-button variant="outline" [disabled]="isSaving" (btnClick)="closeBreakingModal()">Annuler</app-button>
+    <app-button [disabled]="isSaving" (btnClick)="saveBreakingNews()">
+      @if (isSaving) { Enregistrement... } @else { Enregistrer }
+    </app-button>
+  </div>
+  @if (modalErrorMessage) {
+    <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      {{ modalErrorMessage }}
+    </div>
+  }
+</app-modal>
+
+<app-modal [isOpen]="isAdModalOpen" (close)="closeAdModal()" [className]="'max-w-lg p-6 lg:p-7'">
+  <h2 class="mb-3 text-lg font-semibold text-gray-900 dark:text-white">
+    @if (editingAdId) { Modifier une publicite } @else { Creer une publicite }
+  </h2>
+  <div class="grid grid-cols-1 gap-3">
+    <div>
+      <app-label>Titre</app-label>
+      <app-input-field [(value)]="adForm.title" placeholder="Titre encart" />
+    </div>
+    <div>
+      <app-label>Slot</app-label>
+      <select
+        [(ngModel)]="adForm.slot"
+        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 outline-none focus:border-brand-300 dark:border-gray-700 dark:text-white/90"
+      >
+        <option value="header_main">Header (unique)</option>
+        <option value="sidebar_top">Sidebar haut</option>
+        <option value="sidebar_bottom">Sidebar bas</option>
+      </select>
+    </div>
+    <div>
+      <app-label>Image (fichier)</app-label>
+      <input
+        type="file"
+        accept="image/*"
+        (change)="onAdImageSelected($event)"
+        class="block w-full rounded-lg border border-gray-300 p-2 text-sm dark:border-gray-700"
+      />
+      @if (adImageFileName) {
+        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Fichier selectionne: {{ adImageFileName }}</p>
+      } @else if (adForm.imageUrl) {
+        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Image actuelle: {{ adForm.imageUrl }}</p>
+      }
+    </div>
+    <div>
+      <app-label>URL image (fallback)</app-label>
+      <app-input-field [(value)]="adForm.imageUrl" placeholder="https://..." />
+    </div>
+    <div>
+      <app-label>URL cible (optionnel)</app-label>
+      <app-input-field [(value)]="adForm.targetUrl" placeholder="https://..." />
+    </div>
+    <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+      <input type="checkbox" [(ngModel)]="adForm.isActive" />
+      Actif
+    </label>
+  </div>
+  <div class="mt-6 flex justify-end gap-3">
+    <app-button variant="outline" [disabled]="isSaving" (btnClick)="closeAdModal()">Annuler</app-button>
+    <app-button [disabled]="isSaving" (btnClick)="saveAdImage()">
+      @if (isSaving) { Enregistrement... } @else { Enregistrer }
+    </app-button>
+  </div>
+  @if (modalErrorMessage) {
+    <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      {{ modalErrorMessage }}
+    </div>
+  }
+</app-modal>

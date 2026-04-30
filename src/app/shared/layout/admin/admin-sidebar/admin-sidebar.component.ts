@@ -42,6 +42,11 @@ export class AdminSidebarComponent {
       ],
     },
     {
+      name: 'Contenu client',
+      path: '/admin/client-content',
+      icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none"><path d="M4.75 7.75C4.75 6.50736 5.75736 5.5 7 5.5H17C18.2426 5.5 19.25 6.50736 19.25 7.75V16.25C19.25 17.4926 18.2426 18.5 17 18.5H7C5.75736 18.5 4.75 17.4926 4.75 16.25V7.75Z" stroke="currentColor" stroke-width="1.5"/><path d="M8 9.5H16M8 12.5H13M8 15.5H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+    },
+    {
       name: 'Résultats',
       path: '/admin/resultats',
       icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none"><path d="M6.75 18.25V10.75M12 18.25V5.75M17.25 18.25V13.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/></svg>`,
