@@ -794,6 +794,116 @@ span.flatpickr-weekday,
   transition: transform 220ms cubic-bezier(0.2, 0, 0, 1);
 }
 
+/* ngx-editor (ProseMirror) minimal styles */
+.NgxEditor {
+  border: 1px solid var(--color-gray-300);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #fff;
+}
+
+.dark .NgxEditor {
+  border-color: var(--color-gray-700);
+  background: #0c111d;
+}
+
+.NgxEditor__MenuBar {
+  border-bottom: 1px solid var(--color-gray-200);
+  background: var(--color-gray-50);
+  padding: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.dark .NgxEditor__MenuBar {
+  border-bottom-color: var(--color-gray-800);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.NgxEditor__Content {
+  padding: 12px 14px;
+  min-height: 160px;
+}
+
+.NgxEditor__MenuBar button {
+  height: 34px;
+  min-width: 34px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid var(--color-gray-200);
+  background: #fff;
+  color: var(--color-gray-700);
+  font-size: 13px;
+  line-height: 1;
+}
+
+.NgxEditor__MenuBar button:hover {
+  background: var(--color-gray-50);
+}
+
+.NgxEditor__MenuBar button.NgxEditor__MenuItem--Active,
+.NgxEditor__MenuBar button[aria-pressed='true'] {
+  border-color: color-mix(in oklab, var(--color-brand-500) 45%, var(--color-gray-200));
+  background: color-mix(in oklab, var(--color-brand-50) 70%, #fff);
+  color: var(--color-brand-700);
+}
+
+.dark .NgxEditor__MenuBar button {
+  border-color: var(--color-gray-800);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--color-gray-300);
+}
+
+.dark .NgxEditor__MenuBar button:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dark .NgxEditor__MenuBar button.NgxEditor__MenuItem--Active,
+.dark .NgxEditor__MenuBar button[aria-pressed='true'] {
+  border-color: color-mix(in oklab, var(--color-brand-400) 45%, var(--color-gray-800));
+  background: rgba(70, 95, 255, 0.14);
+  color: #fff;
+}
+
+.NgxEditor .ProseMirror {
+  outline: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.NgxEditor .ProseMirror p {
+  margin: 0 0 10px;
+}
+
+.NgxEditor .ProseMirror ul,
+.NgxEditor .ProseMirror ol {
+  padding-left: 1.2em;
+  margin: 0 0 10px;
+  list-style-position: outside;
+}
+
+.NgxEditor .ProseMirror ul {
+  list-style-type: disc;
+}
+
+.NgxEditor .ProseMirror ol {
+  list-style-type: decimal;
+}
+
+.NgxEditor .ProseMirror li {
+  margin: 4px 0;
+}
+
+.NgxEditor .ProseMirror a {
+  color: var(--color-brand-600);
+  text-decoration: underline;
+}
+
+.dark .NgxEditor .ProseMirror a {
+  color: var(--color-brand-400);
+}
+
 .task {
   transition: all 0.2s ease; /* Smooth transition for visual effects */
 }

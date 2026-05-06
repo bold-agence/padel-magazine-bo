@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { forkJoin, map, of, switchMap } from 'rxjs';
+import { Editor, NgxEditorModule, Toolbar } from 'ngx-editor';
 import { ButtonComponent } from '../../../shared/components/ui/button/button.component';
 import { InputFieldComponent } from '../../../shared/components/form/input/input-field.component';
 import { LabelComponent } from '../../../shared/components/form/label/label.component';
@@ -26,6 +27,7 @@ type SectionType =
 
 type SectionForm = {
   uid: string;
+  editor: Editor | null;
   type: SectionType;
   order: number;
   content: string;
@@ -58,14 +60,20 @@ type CreateArticleForm = {
     CommonModule,
     FormsModule,
     DragDropModule,
+    NgxEditorModule,
     ButtonComponent,
     InputFieldComponent,
     LabelComponent,
   ],
   templateUrl: './create-article.component.html',
 })
-export class CreateArticleComponent implements OnInit {
+export class CreateArticleComponent implements OnInit, OnDestroy {
   private uidCounter = 0;
+  protected toolbar: Toolbar = [
+    ['bold', 'italic', 'underline'],
+    ['ordered_list', 'bullet_list'],
+    ['link'],
+  ];
   readonly sectionTypes: SectionType[] = [
     'paragraph',
     'heading',
@@ -124,6 +132,12 @@ export class CreateArticleComponent implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    for (const section of this.sections) {
+      section.editor?.destroy();
+    }
+  }
+
   onTitleChange(value: string | number): void {
     const title = String(value ?? '');
     this.form.title = title;
@@ -167,8 +181,10 @@ export class CreateArticleComponent implements OnInit {
 
   onSectionTypeChange(index: number): void {
     const current = this.sections[index];
+    current.editor?.destroy();
     this.sections[index] = {
       ...this.createDefaultSection(current.order),
+      uid: current.uid,
       type: current.type,
       content: current.content,
       infoBoxTitle: current.infoBoxTitle,
@@ -394,6 +410,7 @@ export class CreateArticleComponent implements OnInit {
   private createDefaultSection(order: number): SectionForm {
     return {
       uid: this.nextUid(),
+      editor: null,
       type: 'paragraph',
       order,
       content: '',
@@ -417,6 +434,7 @@ export class CreateArticleComponent implements OnInit {
     const sorted = [...sections].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     return sorted.map((section, index) => ({
       uid: this.nextUid(),
+      editor: null,
       type: (section.type as SectionType) ?? 'paragraph',
       order: index,
       content: section.content ?? '',
@@ -475,6 +493,9 @@ export class CreateArticleComponent implements OnInit {
       bannerImageUrl: '',
       categoryId: '',
     };
+    for (const section of this.sections) {
+      section.editor?.destroy();
+    }
     this.sections = [this.createDefaultSection(0)];
   }
 
@@ -508,5 +529,12 @@ export class CreateArticleComponent implements OnInit {
   private nextUid(): string {
     this.uidCounter += 1;
     return `sec_${Date.now()}_${this.uidCounter}`;
+  }
+
+  protected getSectionEditor(section: SectionForm): Editor {
+    if (!section.editor) {
+      section.editor = new Editor();
+    }
+    return section.editor;
   }
 }
