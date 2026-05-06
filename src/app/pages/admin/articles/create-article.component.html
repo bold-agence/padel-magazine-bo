@@ -145,20 +145,32 @@
             Ajouter une section
           </app-button>
         </div>
-        <div class="space-y-3">
-          @for (section of sections; track $index) {
-            <div class="rounded-xl border border-gray-200 p-4 dark:border-gray-700">
+        <div
+          class="space-y-3"
+          cdkDropList
+          [cdkDropListData]="sections"
+          (cdkDropListDropped)="onSectionsDropped($event)"
+        >
+          @for (section of sections; track section.uid; let i = $index) {
+            <div class="rounded-xl border border-gray-200 p-4 dark:border-gray-700" cdkDrag>
               <div class="mb-3 flex items-center justify-between">
                 <div class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Section #{{ $index + 1 }}
+                  <span
+                    cdkDragHandle
+                    class="mr-2 inline-flex cursor-move select-none items-center rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                    title="Glisser-déposer pour déplacer"
+                    aria-label="Déplacer la section"
+                    >↕</span
+                  >
+                  Section #{{ i + 1 }}
                 </div>
                 <div class="flex gap-2">
                   <app-button
                     size="sm"
                     variant="outline"
                     className="!px-2 !py-1"
-                    [disabled]="$index === 0"
-                    (btnClick)="moveSectionUp($index)"
+                    [disabled]="i === 0"
+                    (btnClick)="moveSectionUp(i)"
                   >
                     ↑
                   </app-button>
@@ -166,8 +178,8 @@
                     size="sm"
                     variant="outline"
                     className="!px-2 !py-1"
-                    [disabled]="$index === sections.length - 1"
-                    (btnClick)="moveSectionDown($index)"
+                    [disabled]="i === sections.length - 1"
+                    (btnClick)="moveSectionDown(i)"
                   >
                     ↓
                   </app-button>
@@ -175,7 +187,7 @@
                     size="sm"
                     variant="outline"
                     className="!px-2 !py-1 !text-red-700 !ring-red-200 hover:!bg-red-50"
-                    (btnClick)="removeSection($index)"
+                    (btnClick)="removeSection(i)"
                   >
                     X
                   </app-button>
@@ -187,7 +199,7 @@
                   <app-label>Type</app-label>
                   <select
                     [(ngModel)]="section.type"
-                    (ngModelChange)="onSectionTypeChange($index)"
+                    (ngModelChange)="onSectionTypeChange(i)"
                     class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 outline-none focus:border-brand-300 dark:border-gray-700 dark:text-white/90"
                   >
                     @for (type of sectionTypes; track type) {
@@ -199,7 +211,7 @@
                   <app-label>Ordre</app-label>
                   <input
                     type="number"
-                    [value]="$index"
+                    [value]="i"
                     disabled
                     class="h-11 w-full rounded-lg border border-gray-300 bg-gray-100 px-3 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
                   />
@@ -224,7 +236,7 @@
                     <input
                       type="file"
                       accept="image/*"
-                      (change)="onSectionImageSelected($index, $event)"
+                      (change)="onSectionImageSelected(i, $event)"
                       class="block w-full rounded-lg border border-gray-300 p-2 text-sm dark:border-gray-700"
                     />
                     @if (section.imageFileName) {

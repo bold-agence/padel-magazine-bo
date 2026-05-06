@@ -769,6 +769,31 @@ span.flatpickr-weekday,
   @apply border-brand-500 bg-brand-500 dark:border-brand-500;
 }
 
+.cdk-drop-list-dragging .cdk-drag {
+  transition: transform 180ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 12px;
+  box-shadow: var(--shadow-theme-xl);
+  border: 1px solid color-mix(in oklab, var(--color-brand-500) 30%, transparent);
+  background: #ffffff;
+}
+
+.dark .cdk-drag-preview {
+  background: #1a2231;
+  border-color: color-mix(in oklab, var(--color-brand-400) 35%, transparent);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.6;
+}
+
+.cdk-drag-animating {
+  transition: transform 220ms cubic-bezier(0.2, 0, 0, 1);
+}
+
 .task {
   transition: all 0.2s ease; /* Smooth transition for visual effects */
 }

@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { forkJoin, map, of, switchMap } from 'rxjs';
 import { ButtonComponent } from '../../../shared/components/ui/button/button.component';
 import { InputFieldComponent } from '../../../shared/components/form/input/input-field.component';
@@ -24,6 +25,7 @@ type SectionType =
   | 'info_box';
 
 type SectionForm = {
+  uid: string;
   type: SectionType;
   order: number;
   content: string;
@@ -52,10 +54,18 @@ type CreateArticleForm = {
 @Component({
   selector: 'app-admin-create-article',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonComponent, InputFieldComponent, LabelComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DragDropModule,
+    ButtonComponent,
+    InputFieldComponent,
+    LabelComponent,
+  ],
   templateUrl: './create-article.component.html',
 })
 export class CreateArticleComponent implements OnInit {
+  private uidCounter = 0;
   readonly sectionTypes: SectionType[] = [
     'paragraph',
     'heading',
@@ -124,6 +134,14 @@ export class CreateArticleComponent implements OnInit {
     const section = this.createDefaultSection(this.sections.length);
     section.type = type;
     this.sections.push(section);
+  }
+
+  onSectionsDropped(event: CdkDragDrop<SectionForm[]>): void {
+    if (event.previousIndex === event.currentIndex) {
+      return;
+    }
+    moveItemInArray(this.sections, event.previousIndex, event.currentIndex);
+    this.reindexSections();
   }
 
   removeSection(index: number): void {
@@ -375,6 +393,7 @@ export class CreateArticleComponent implements OnInit {
 
   private createDefaultSection(order: number): SectionForm {
     return {
+      uid: this.nextUid(),
       type: 'paragraph',
       order,
       content: '',
@@ -397,6 +416,7 @@ export class CreateArticleComponent implements OnInit {
 
     const sorted = [...sections].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     return sorted.map((section, index) => ({
+      uid: this.nextUid(),
       type: (section.type as SectionType) ?? 'paragraph',
       order: index,
       content: section.content ?? '',
@@ -483,5 +503,10 @@ export class CreateArticleComponent implements OnInit {
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-');
+  }
+
+  private nextUid(): string {
+    this.uidCounter += 1;
+    return `sec_${Date.now()}_${this.uidCounter}`;
   }
 }
