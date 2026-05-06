@@ -23,6 +23,7 @@ export class ModalComponent {
   @Input() className = '';
   @Input() showCloseButton = true;
   @Input() isFullscreen = false;
+  @Input() centered = false;
 
   constructor(private el: ElementRef) {}
 

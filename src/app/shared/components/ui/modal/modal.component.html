@@ -1,6 +1,9 @@
 <!-- Only render if open -->
 @if (isOpen) {
-<div class="fixed inset-0 z-99999 flex items-start justify-center overflow-y-auto modal py-6">
+<div
+  class="fixed inset-0 z-99999 flex justify-center overflow-y-auto modal py-6"
+  [ngClass]="centered ? 'items-center' : 'items-start'"
+>
   <!-- Backdrop -->
   @if (!isFullscreen) {
   <div

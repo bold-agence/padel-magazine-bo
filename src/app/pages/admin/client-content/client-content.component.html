@@ -131,7 +131,7 @@
   </div>
 </div>
 
-<app-modal [isOpen]="isBreakingModalOpen" (close)="closeBreakingModal()" [className]="'max-w-lg p-6 lg:p-7'">
+<app-modal [isOpen]="isBreakingModalOpen" [centered]="true" (close)="closeBreakingModal()" [className]="'max-w-lg p-6 lg:p-7'">
   <h2 class="mb-3 text-lg font-semibold text-gray-900 dark:text-white">
     @if (editingBreakingId) { Modifier un breaking news } @else { Creer un breaking news }
   </h2>
@@ -170,7 +170,7 @@
   }
 </app-modal>
 
-<app-modal [isOpen]="isAdModalOpen" (close)="closeAdModal()" [className]="'max-w-lg p-6 lg:p-7'">
+<app-modal [isOpen]="isAdModalOpen" [centered]="true" (close)="closeAdModal()" [className]="'max-w-lg p-6 lg:p-7'">
   <h2 class="mb-3 text-lg font-semibold text-gray-900 dark:text-white">
     @if (editingAdId) { Modifier une publicite } @else { Creer une publicite }
   </h2>
