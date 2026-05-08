@@ -9,6 +9,7 @@ export type Player = {
   name: string;
   nationality: string;
   profilePhoto?: string;
+  club?: { id: string; title: string } | null;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -17,6 +18,7 @@ export type PlayerPayload = {
   slug: string;
   name: string;
   nationality: string;
+  clubId?: string | null;
 };
 
 export type UpdatePlayerOptions = {
@@ -49,6 +51,9 @@ export class PlayersService {
     formData.append('slug', payload.slug);
     formData.append('name', payload.name);
     formData.append('nationality', payload.nationality);
+    if (payload.clubId !== undefined && payload.clubId !== null && payload.clubId !== '') {
+      formData.append('clubId', payload.clubId);
+    }
     if (profilePhoto) {
       formData.append('profilePhoto', profilePhoto);
     }
@@ -80,6 +85,15 @@ export class PlayersService {
     }
     if (payload.nationality) {
       formData.append('nationality', payload.nationality);
+    }
+    if (payload.clubId !== undefined) {
+      if (payload.clubId === null || payload.clubId === '') {
+        // API expects explicit null/unset behavior; send empty string and backend treats as missing.
+        // (Backend also supports JSON patch for null on the no-file path)
+        formData.append('clubId', '');
+      } else {
+        formData.append('clubId', payload.clubId);
+      }
     }
     if (hasFile && options?.profilePhotoFile) {
       formData.append('profilePhoto', options.profilePhotoFile);

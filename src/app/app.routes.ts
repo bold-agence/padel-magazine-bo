@@ -22,6 +22,9 @@ import { AdminLayoutComponent } from './shared/layout/admin/admin-layout/admin-l
 import { AdminDashboardComponent } from './pages/admin/dashboard/admin-dashboard.component';
 import { authGuard } from './core/guards/auth.guard';
 import { PlayersComponent } from './pages/admin/settings/players/players.component';
+import { ClubsComponent } from './pages/admin/settings/clubs/clubs.component';
+import { PortraitCategoriesComponent } from './pages/admin/settings/portraits/portrait-categories.component';
+import { PortraitsComponent } from './pages/admin/settings/portraits/portraits.component';
 import { ArticlesComponent } from './pages/admin/articles/articles.component';
 import { ArticleTagsComponent } from './pages/admin/articles/tags/article-tags.component';
 import { CreateArticleComponent } from './pages/admin/articles/create-article.component';
@@ -148,6 +151,21 @@ export const routes: Routes = [
         title: 'Parametres - Joueurs | Padel Magazine Admin',
       },
       {
+        path: 'settings/clubs',
+        component: ClubsComponent,
+        title: 'Parametres - Clubs | Padel Magazine Admin',
+      },
+      {
+        path: 'settings/portrait-categories',
+        component: PortraitCategoriesComponent,
+        title: 'Parametres - Categories de portraits | Padel Magazine Admin',
+      },
+      {
+        path: 'settings/portraits',
+        component: PortraitsComponent,
+        title: 'Parametres - Portraits | Padel Magazine Admin',
+      },
+      {
         path: 'articles',
         component: ArticlesComponent,
         title: 'Articles | Padel Magazine Admin',
@@ -175,7 +193,7 @@ export const routes: Routes = [
       {
         path: 'client-content',
         component: ClientContentComponent,
-        title: 'Contenu client | Padel Magazine Admin',
+        title: 'Breaking News & Pubs | Padel Magazine Admin',
       },
     ],
   },

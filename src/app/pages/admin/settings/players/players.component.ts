@@ -5,16 +5,19 @@ import { ButtonComponent } from '../../../../shared/components/ui/button/button.
 import { ModalComponent } from '../../../../shared/components/ui/modal/modal.component';
 import { InputFieldComponent } from '../../../../shared/components/form/input/input-field.component';
 import { LabelComponent } from '../../../../shared/components/form/label/label.component';
+import { SelectComponent, Option } from '../../../../shared/components/form/select/select.component';
 import {
   Player,
   PlayersService,
 } from '../../../../core/services/players.service';
 import { environment } from '../../../../../environments/environment';
+import { Club, ClubsService } from '../../../../core/services/clubs.service';
 
 type PlayerForm = {
   slug: string;
   name: string;
   nationality: string;
+  clubId: string;
   profilePhotoFile: File | null;
   profilePhotoName: string;
   existingProfilePhotoUrl: string | null;
@@ -31,12 +34,15 @@ type PlayerForm = {
     ButtonComponent,
     ModalComponent,
     InputFieldComponent,
+    SelectComponent,
     LabelComponent,
   ],
   templateUrl: './players.component.html',
 })
 export class PlayersComponent implements OnInit {
   players: Player[] = [];
+  clubs: Club[] = [];
+  clubOptions: Option[] = [{ value: '', label: 'Aucun club' }];
   private readonly brokenPhotoIds = new Set<string>();
   isLoading = false;
   isModalOpen = false;
@@ -53,6 +59,7 @@ export class PlayersComponent implements OnInit {
     slug: '',
     name: '',
     nationality: '',
+    clubId: '',
     profilePhotoFile: null,
     profilePhotoName: '',
     existingProfilePhotoUrl: null,
@@ -60,10 +67,31 @@ export class PlayersComponent implements OnInit {
     removeProfilePhoto: false,
   };
 
-  constructor(private readonly playersService: PlayersService) {}
+  constructor(
+    private readonly playersService: PlayersService,
+    private readonly clubsService: ClubsService,
+  ) {}
 
   ngOnInit(): void {
+    this.loadClubs();
     this.loadPlayers();
+  }
+
+  loadClubs(): void {
+    this.clubsService.findAll().subscribe({
+      next: (clubs) => {
+        this.clubs = clubs;
+        this.clubOptions = [
+          { value: '', label: 'Aucun club' },
+          ...clubs.map((c) => ({ value: c.id, label: c.title })),
+        ];
+      },
+      error: () => {
+        // keep dropdown usable even if clubs fail to load
+        this.clubs = [];
+        this.clubOptions = [{ value: '', label: 'Aucun club' }];
+      },
+    });
   }
 
   loadPlayers(): void {
@@ -88,6 +116,7 @@ export class PlayersComponent implements OnInit {
       slug: '',
       name: '',
       nationality: '',
+      clubId: '',
       profilePhotoFile: null,
       profilePhotoName: '',
       existingProfilePhotoUrl: null,
@@ -105,6 +134,7 @@ export class PlayersComponent implements OnInit {
       slug: player.slug,
       name: player.name,
       nationality: player.nationality,
+      clubId: player.club?.id ?? '',
       profilePhotoFile: null,
       profilePhotoName: '',
       existingProfilePhotoUrl: this.getAvatarUrl(player),
@@ -131,6 +161,7 @@ export class PlayersComponent implements OnInit {
       slug: this.form.slug.trim(),
       name: this.form.name.trim(),
       nationality: this.form.nationality.trim(),
+      clubId: this.form.clubId ? this.form.clubId : null,
     };
 
     if (!payload.slug || !payload.name || !payload.nationality) {

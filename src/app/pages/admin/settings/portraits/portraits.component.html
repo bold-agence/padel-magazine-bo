@@ -1,0 +1,161 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Portraits</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        Gestion des portraits (joueur, catégorie, article optionnel).
+      </p>
+    </div>
+    <app-button size="sm" (btnClick)="openCreateModal()">Ajouter un portrait</app-button>
+  </div>
+
+  @if (errorMessage) {
+    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300">
+      {{ errorMessage }}
+    </div>
+  }
+
+  <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-800/50">
+        <tr>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Joueur</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Catégorie</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Indice</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Points</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Article lié</th>
+          <th class="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (isLoading) {
+          <tr>
+            <td colspan="6" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+              Chargement...
+            </td>
+          </tr>
+        } @else if (!portraits.length) {
+          <tr>
+            <td colspan="6" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+              Aucun portrait.
+            </td>
+          </tr>
+        } @else {
+          @for (p of portraits; track p.id) {
+            <tr class="border-t border-gray-100 dark:border-gray-800">
+              <td class="px-4 py-3 text-gray-900 dark:text-white">{{ p.player.name }}</td>
+              <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ p.category.libelle }}</td>
+              <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ p.indice }}</td>
+              <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ p.pointNumber }}</td>
+              <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
+                {{ p.article?.title || '-' }}
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex justify-end gap-2">
+                  <app-button size="sm" variant="outline" className="!px-3 !py-2" (btnClick)="openEditModal(p)">
+                    Modifier
+                  </app-button>
+                  <app-button
+                    size="sm"
+                    variant="outline"
+                    className="!px-3 !py-2 !text-red-700 !ring-red-200 hover:!bg-red-50 dark:!text-red-300 dark:!ring-red-900/40 dark:hover:!bg-red-950/30"
+                    (btnClick)="openDeleteModal(p)"
+                  >
+                    Supprimer
+                  </app-button>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<app-modal [isOpen]="isModalOpen" (close)="closeModal()" [className]="'max-w-2xl p-6 lg:p-8'">
+  <h2 class="mb-1 text-lg font-semibold text-gray-900 dark:text-white">
+    @if (modalMode === 'create') { Creer un portrait } @else { Modifier le portrait }
+  </h2>
+  <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
+    L’article lié (optionnel) doit être un article avec visibilité = false.
+  </p>
+
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <div class="md:col-span-1">
+      <app-label>Joueur <span class="text-error-500">*</span></app-label>
+      <app-select
+        [options]="playerOptions"
+        placeholder="Selectionner un joueur"
+        [value]="form.playerId"
+        (valueChange)="form.playerId = $event"
+      />
+    </div>
+
+    <div class="md:col-span-1">
+      <app-label>Catégorie <span class="text-error-500">*</span></app-label>
+      <app-select
+        [options]="categoryOptions"
+        placeholder="Selectionner une categorie"
+        [value]="form.categoryId"
+        (valueChange)="form.categoryId = $event"
+      />
+    </div>
+
+    <div>
+      <app-label>Indice</app-label>
+      <app-input-field type="number" [(value)]="form.indice" />
+    </div>
+
+    <div>
+      <app-label>Nombre de points</app-label>
+      <app-input-field type="number" [(value)]="form.pointNumber" />
+    </div>
+
+    <div class="md:col-span-2">
+      <app-label>Signature</app-label>
+      <app-input-field [(value)]="form.signature" placeholder="Optionnel" />
+    </div>
+
+    <div class="md:col-span-2">
+      <app-label>Article lié (optionnel)</app-label>
+      <app-select
+        [options]="articleOptions"
+        placeholder="Aucun article"
+        [value]="form.articleId"
+        (valueChange)="form.articleId = $event"
+      />
+    </div>
+  </div>
+
+  @if (modalErrorMessage) {
+    <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300">
+      {{ modalErrorMessage }}
+    </div>
+  }
+
+  <div class="mt-6 flex justify-end gap-3">
+    <app-button variant="outline" (btnClick)="closeModal()">Annuler</app-button>
+    <app-button [disabled]="isSaving" (btnClick)="submitModal()">
+      @if (isSaving) { Enregistrement... } @else { Enregistrer }
+    </app-button>
+  </div>
+</app-modal>
+
+<app-modal [isOpen]="isDeleteModalOpen" (close)="closeDeleteModal()" [className]="'max-w-md p-6 lg:p-7'">
+  <h2 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">Confirmer la suppression</h2>
+  <p class="text-sm text-gray-600 dark:text-gray-300">
+    Voulez-vous vraiment supprimer le portrait de
+    <span class="font-medium text-gray-900 dark:text-white">{{ portraitToDelete?.player?.name }}</span>
+    ?
+  </p>
+  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Cette action est irreversible.</p>
+
+  <div class="mt-6 flex justify-end gap-3">
+    <app-button variant="outline" [disabled]="isDeleting" (btnClick)="closeDeleteModal()">Annuler</app-button>
+    <app-button [disabled]="isDeleting" className="!bg-red-600 hover:!bg-red-700" (btnClick)="confirmDelete()">
+      @if (isDeleting) { Suppression... } @else { Supprimer }
+    </app-button>
+  </div>
+</app-modal>
+

@@ -42,9 +42,31 @@ export class AdminSidebarComponent {
       ],
     },
     {
-      name: 'Contenu client',
+      name: 'Breaking News & Pubs',
       path: '/admin/client-content',
       icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none"><path d="M4.75 7.75C4.75 6.50736 5.75736 5.5 7 5.5H17C18.2426 5.5 19.25 6.50736 19.25 7.75V16.25C19.25 17.4926 18.2426 18.5 17 18.5H7C5.75736 18.5 4.75 17.4926 4.75 16.25V7.75Z" stroke="currentColor" stroke-width="1.5"/><path d="M8 9.5H16M8 12.5H13M8 15.5H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+    },
+    {
+      name: 'Joueurs',
+      icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none"><path d="M12 9.25C10.4812 9.25 9.25 10.4812 9.25 12C9.25 13.5188 10.4812 14.75 12 14.75C13.5188 14.75 14.75 13.5188 14.75 12C14.75 10.4812 13.5188 9.25 12 9.25Z" stroke="currentColor" stroke-width="1.5"/><path d="M19.25 12C19.25 11.5094 19.2098 11.0283 19.1326 10.5599L21 9.25L19.25 6.25L17.11 6.86C16.3899 6.25316 15.5452 5.78902 14.625 5.5L14.25 3.25H9.75L9.375 5.5C8.4548 5.78902 7.61012 6.25316 6.89 6.86L4.75 6.25L3 9.25L4.8674 10.5599C4.79022 11.0283 4.75 11.5094 4.75 12C4.75 12.4906 4.79022 12.9717 4.8674 13.4401L3 14.75L4.75 17.75L6.89 17.14C7.61012 17.7468 8.4548 18.211 9.375 18.5L9.75 20.75H14.25L14.625 18.5C15.5452 18.211 16.3899 17.7468 17.11 17.14L19.25 17.75L21 14.75L19.1326 13.4401C19.2098 12.9717 19.25 12.4906 19.25 12Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>`,
+      subItems: [
+        {
+          name: 'Liste des joueurs',
+          path: '/admin/settings/players',
+        },
+        {
+          name: 'Clubs',
+          path: '/admin/settings/clubs',
+        },
+        {
+          name: 'Catégories portraits',
+          path: '/admin/settings/portrait-categories',
+        },
+        {
+          name: 'Portraits',
+          path: '/admin/settings/portraits',
+        },
+      ],
     },
     {
       name: 'Résultats',
@@ -70,16 +92,6 @@ export class AdminSidebarComponent {
       name: 'A propos & Contact',
       path: '/admin/apropos',
       icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.25" stroke="currentColor" stroke-width="1.5"/><path d="M12 16.25V11.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="8.75" r="0.75" fill="currentColor"/></svg>`,
-    },
-    {
-      name: 'Paramètres',
-      icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none"><path d="M12 9.25C10.4812 9.25 9.25 10.4812 9.25 12C9.25 13.5188 10.4812 14.75 12 14.75C13.5188 14.75 14.75 13.5188 14.75 12C14.75 10.4812 13.5188 9.25 12 9.25Z" stroke="currentColor" stroke-width="1.5"/><path d="M19.25 12C19.25 11.5094 19.2098 11.0283 19.1326 10.5599L21 9.25L19.25 6.25L17.11 6.86C16.3899 6.25316 15.5452 5.78902 14.625 5.5L14.25 3.25H9.75L9.375 5.5C8.4548 5.78902 7.61012 6.25316 6.89 6.86L4.75 6.25L3 9.25L4.8674 10.5599C4.79022 11.0283 4.75 11.5094 4.75 12C4.75 12.4906 4.79022 12.9717 4.8674 13.4401L3 14.75L4.75 17.75L6.89 17.14C7.61012 17.7468 8.4548 18.211 9.375 18.5L9.75 20.75H14.25L14.625 18.5C15.5452 18.211 16.3899 17.7468 17.11 17.14L19.25 17.75L21 14.75L19.1326 13.4401C19.2098 12.9717 19.25 12.4906 19.25 12Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>`,
-      subItems: [
-        {
-          name: 'Joueurs',
-          path: '/admin/settings/players',
-        },
-      ],
     },
   ];
   openSubmenu: string | null = null;

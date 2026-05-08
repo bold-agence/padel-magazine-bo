@@ -1,4 +1,5 @@
 
+import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 
 export interface Option {
@@ -8,7 +9,8 @@ export interface Option {
 
 @Component({
   selector: 'app-select',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './select.component.html',
 })
 export class SelectComponent implements OnInit {

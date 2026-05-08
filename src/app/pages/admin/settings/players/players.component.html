@@ -26,19 +26,20 @@
           <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Joueur</th>
           <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Slug</th>
           <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Nationalite</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Club</th>
           <th class="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Actions</th>
         </tr>
       </thead>
       <tbody>
         @if (isLoading) {
         <tr>
-          <td colspan="4" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+          <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
             Chargement...
           </td>
         </tr>
         } @else if (!players.length) {
         <tr>
-          <td colspan="4" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+          <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
             Aucun joueur pour le moment.
           </td>
         </tr>
@@ -66,6 +67,9 @@
             </td>
             <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ player.slug }}</td>
             <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ player.nationality }}</td>
+            <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
+              {{ player.club?.title || '-' }}
+            </td>
             <td class="px-4 py-3">
               <div class="flex justify-end gap-2">
                 <app-button
@@ -126,6 +130,15 @@
     <div>
       <app-label>Nationalite <span class="text-error-500">*</span></app-label>
       <app-input-field [(value)]="form.nationality" placeholder="Senegal" />
+    </div>
+    <div>
+      <app-label>Club</app-label>
+      <app-select
+        [options]="clubOptions"
+        placeholder="Selectionner un club"
+        [value]="form.clubId"
+        (valueChange)="form.clubId = $event"
+      />
     </div>
     <div>
       <app-label>Photo de profil</app-label>
