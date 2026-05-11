@@ -31,6 +31,8 @@ import { CreateArticleComponent } from './pages/admin/articles/create-article.co
 import { ArticleCategoriesComponent } from './pages/admin/articles/categories/article-categories.component';
 import { ClientContentComponent } from './pages/admin/client-content/client-content.component';
 import { ClassementsPageComponent } from './pages/admin/classements/classements-page.component';
+import { VideoTypesPageComponent } from './pages/admin/settings/video-types/video-types-page.component';
+import { SiteVideosPageComponent } from './pages/admin/settings/site-videos/site-videos-page.component';
 
 export const routes: Routes = [
   {
@@ -165,6 +167,16 @@ export const routes: Routes = [
         path: 'settings/portraits',
         component: PortraitsComponent,
         title: 'Parametres - Portraits | Padel Magazine Admin',
+      },
+      {
+        path: 'settings/video-types',
+        component: VideoTypesPageComponent,
+        title: 'Parametres - Types de video | Padel Magazine Admin',
+      },
+      {
+        path: 'settings/site-videos',
+        component: SiteVideosPageComponent,
+        title: 'Parametres - Videos site | Padel Magazine Admin',
       },
       {
         path: 'articles',

@@ -85,8 +85,11 @@ export class AdminSidebarComponent {
     },
     {
       name: 'Videos',
-      path: '/admin/videos',
       icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none"><rect x="4.75" y="6.75" width="10.5" height="10.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/><path d="M10.25 10.2V13.8L13.2 12L10.25 10.2Z" fill="currentColor"/><path d="M15.25 10.25L18.75 8.5V15.5L15.25 13.75V10.25Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>`,
+      subItems: [
+        { name: 'Types de vidéo', path: '/admin/settings/video-types' },
+        { name: 'Vidéos (site)', path: '/admin/settings/site-videos' },
+      ],
     },
     {
       name: 'A propos & Contact',

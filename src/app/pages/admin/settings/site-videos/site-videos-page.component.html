@@ -1,0 +1,146 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Vidéos (site)</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        Liens YouTube affichés sur la page Vidéos du site public.
+      </p>
+    </div>
+    <app-button size="sm" (btnClick)="openCreateModal()">Ajouter une vidéo</app-button>
+  </div>
+
+  @if (errorMessage) {
+    <div
+      class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300"
+    >
+      {{ errorMessage }}
+    </div>
+  }
+
+  <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-800/50">
+        <tr>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Titre</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Type</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Lien YouTube</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Créée le</th>
+          <th class="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (isLoading) {
+          <tr>
+            <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Chargement...</td>
+          </tr>
+        } @else if (!videos.length) {
+          <tr>
+            <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Aucune vidéo.</td>
+          </tr>
+        } @else {
+          @for (v of videos; track v.id) {
+            <tr class="border-t border-gray-100 dark:border-gray-800">
+              <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ v.title }}</td>
+              <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ v.videoType?.title ?? '-' }}</td>
+              <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
+                <a
+                  class="text-brand-600 hover:underline dark:text-brand-400"
+                  [href]="v.youtubeLink"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {{ truncateUrl(v.youtubeLink) }}
+                </a>
+              </td>
+              <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
+                {{ v.createdAt | date: 'short' }}
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex justify-end gap-2">
+                  <app-button size="sm" variant="outline" className="!px-3 !py-2" (btnClick)="openEditModal(v)">
+                    Modifier
+                  </app-button>
+                  <app-button
+                    size="sm"
+                    variant="outline"
+                    className="!px-3 !py-2 !text-red-700 !ring-red-200 hover:!bg-red-50 dark:!text-red-300 dark:!ring-red-900/40 dark:hover:!bg-red-950/30"
+                    (btnClick)="openDeleteModal(v)"
+                  >
+                    Supprimer
+                  </app-button>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<app-modal [isOpen]="isModalOpen" (close)="closeModal()" [className]="'max-w-xl p-6 lg:p-8'">
+  <h2 class="mb-1 text-lg font-semibold text-gray-900 dark:text-white">
+    @if (modalMode === 'create') {
+      Nouvelle vidéo
+    } @else {
+      Modifier la vidéo
+    }
+  </h2>
+  <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">
+    Collez l’URL complète de la vidéo (youtube.com ou youtu.be).
+  </p>
+  <div class="space-y-4">
+    <div>
+      <app-label>Titre <span class="text-error-500">*</span></app-label>
+      <app-input-field [(value)]="form.title" placeholder="Titre affiché sur le site" />
+    </div>
+    <div>
+      <app-label>Lien YouTube <span class="text-error-500">*</span></app-label>
+      <app-input-field [(value)]="form.youtubeLink" placeholder="https://www.youtube.com/watch?v=..." />
+    </div>
+    <div>
+      <app-label>Type <span class="text-error-500">*</span></app-label>
+      <app-select
+        [options]="typeOptions"
+        placeholder="Sélectionner un type"
+        [value]="form.videoTypeId"
+        (valueChange)="form.videoTypeId = $event"
+      />
+    </div>
+  </div>
+  @if (modalErrorMessage) {
+    <div
+      class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300"
+    >
+      {{ modalErrorMessage }}
+    </div>
+  }
+  <div class="mt-6 flex justify-end gap-3">
+    <app-button variant="outline" (btnClick)="closeModal()">Annuler</app-button>
+    <app-button [disabled]="isSaving" (btnClick)="submitModal()">
+      @if (isSaving) {
+        Enregistrement...
+      } @else {
+        Enregistrer
+      }
+    </app-button>
+  </div>
+</app-modal>
+
+<app-modal [isOpen]="isDeleteModalOpen" (close)="closeDeleteModal()" [className]="'max-w-md p-6 lg:p-7'">
+  <h2 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">Confirmer la suppression</h2>
+  <p class="text-sm text-gray-600 dark:text-gray-300">
+    Supprimer
+    <span class="font-medium text-gray-900 dark:text-white">{{ videoToDelete?.title }}</span> ?
+  </p>
+  <div class="mt-6 flex justify-end gap-3">
+    <app-button variant="outline" [disabled]="isDeleting" (btnClick)="closeDeleteModal()">Annuler</app-button>
+    <app-button [disabled]="isDeleting" className="!bg-red-600 hover:!bg-red-700" (btnClick)="confirmDelete()">
+      @if (isDeleting) {
+        Suppression...
+      } @else {
+        Supprimer
+      }
+    </app-button>
+  </div>
+</app-modal>
