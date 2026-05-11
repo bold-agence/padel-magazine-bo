@@ -50,7 +50,7 @@ export class ArticlesComponent implements OnInit {
   loadArticles(page = 1): void {
     this.isLoading = true;
     this.errorMessage = '';
-    this.articlesService.findPaginated(page, this.pageSize).subscribe({
+    this.articlesService.findPaginated(page, this.pageSize, 'all', true).subscribe({
       next: (response: PaginatedArticlesResponse) => {
         this.articles = response.items;
         this.currentPage = response.pagination.page;

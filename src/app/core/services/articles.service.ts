@@ -101,10 +101,28 @@ export class ArticlesService {
       .pipe(map((response) => this.unwrap(response)));
   }
 
-  findPaginated(page = 1, limit = 10): Observable<PaginatedArticlesResponse> {
+  findPaginated(
+    page = 1,
+    limit = 10,
+    category = 'all',
+    includeHidden = false,
+    onlyHidden = false,
+    q?: string,
+  ): Observable<PaginatedArticlesResponse> {
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+      category,
+      includeHidden: String(includeHidden),
+      onlyHidden: String(onlyHidden),
+    });
+    const trimmed = q?.trim();
+    if (trimmed) {
+      params.set('q', trimmed);
+    }
     return this.http
       .get<ApiEnvelope<PaginatedArticlesResponse> | PaginatedArticlesResponse>(
-        `${this.apiUrl}/paginated?page=${page}&limit=${limit}&category=all&includeHidden=true`,
+        `${this.apiUrl}/paginated?${params.toString()}`,
       )
       .pipe(map((response) => this.unwrap(response)));
   }

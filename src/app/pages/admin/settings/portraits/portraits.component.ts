@@ -1,18 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, DestroyRef, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subject, of } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs/operators';
 import { ButtonComponent } from '../../../../shared/components/ui/button/button.component';
 import { InputFieldComponent } from '../../../../shared/components/form/input/input-field.component';
 import { LabelComponent } from '../../../../shared/components/form/label/label.component';
 import { ModalComponent } from '../../../../shared/components/ui/modal/modal.component';
 import { SelectComponent, Option } from '../../../../shared/components/form/select/select.component';
-import { PlayersService, Player } from '../../../../core/services/players.service';
+import { PlayersService } from '../../../../core/services/players.service';
 import { ArticlesService, Article } from '../../../../core/services/articles.service';
-import {
-  Portrait,
-  PortraitCategory,
-  PortraitsService,
-} from '../../../../core/services/portraits.service';
+import { Portrait, PortraitsService } from '../../../../core/services/portraits.service';
 
 type PortraitForm = {
   playerId: string;
@@ -28,7 +26,6 @@ type PortraitForm = {
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     ButtonComponent,
     InputFieldComponent,
     LabelComponent,
@@ -39,13 +36,17 @@ type PortraitForm = {
 })
 export class PortraitsComponent implements OnInit {
   portraits: Portrait[] = [];
-  categories: PortraitCategory[] = [];
-  players: Player[] = [];
-  invisibleArticles: Article[] = [];
 
   playerOptions: Option[] = [{ value: '', label: 'Selectionner un joueur' }];
   categoryOptions: Option[] = [{ value: '', label: 'Selectionner une categorie' }];
-  articleOptions: Option[] = [{ value: '', label: 'Aucun article (optionnel)' }];
+
+  /** Recherche d'articles non visibles pour le lien optionnel */
+  articleSearchQuery = '';
+  articleSearchResults: Article[] = [];
+  articleSearchLoading = false;
+  selectedArticleLabel = '';
+
+  private readonly articleSearchTrigger = new Subject<string>();
 
   isLoading = false;
   errorMessage = '';
@@ -73,7 +74,41 @@ export class PortraitsComponent implements OnInit {
     private readonly portraitsService: PortraitsService,
     private readonly playersService: PlayersService,
     private readonly articlesService: ArticlesService,
-  ) {}
+    private readonly destroyRef: DestroyRef,
+  ) {
+    this.articleSearchTrigger
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((raw) => {
+          const term = String(raw).trim();
+          if (!term) {
+            this.articleSearchResults = [];
+            return of(null);
+          }
+          this.articleSearchLoading = true;
+          return this.articlesService
+            .findPaginated(1, 20, 'all', true, true, term)
+            .pipe(
+              finalize(() => {
+                this.articleSearchLoading = false;
+              }),
+              catchError(() => {
+                this.articleSearchResults = [];
+                return of(null);
+              }),
+            );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((res) => {
+        if (res && 'items' in res) {
+          this.articleSearchResults = res.items;
+        } else {
+          this.articleSearchResults = [];
+        }
+      });
+  }
 
   ngOnInit(): void {
     this.loadRefs();
@@ -83,49 +118,44 @@ export class PortraitsComponent implements OnInit {
   private loadRefs(): void {
     this.playersService.findAll().subscribe({
       next: (players) => {
-        this.players = players;
         this.playerOptions = [
           { value: '', label: 'Selectionner un joueur' },
           ...players.map((p) => ({ value: p.id, label: p.name })),
         ];
       },
       error: () => {
-        this.players = [];
         this.playerOptions = [{ value: '', label: 'Selectionner un joueur' }];
       },
     });
 
     this.portraitsService.findAllCategories().subscribe({
       next: (categories) => {
-        this.categories = categories;
         this.categoryOptions = [
           { value: '', label: 'Selectionner une categorie' },
           ...categories.map((c) => ({ value: c.id, label: c.libelle })),
         ];
       },
       error: () => {
-        this.categories = [];
         this.categoryOptions = [{ value: '', label: 'Selectionner une categorie' }];
       },
     });
+  }
 
-    // Simple list: first page only, and filter isVisible=false in BO (API also enforces isVisible=false if linked)
-    this.articlesService.findPaginated(1, 50).subscribe({
-      next: (res) => {
-        this.invisibleArticles = res.items.filter((a) => a.isVisible === false);
-        this.articleOptions = [
-          { value: '', label: 'Aucun article (optionnel)' },
-          ...this.invisibleArticles.map((a) => ({
-            value: a.id,
-            label: a.title,
-          })),
-        ];
-      },
-      error: () => {
-        this.invisibleArticles = [];
-        this.articleOptions = [{ value: '', label: 'Aucun article (optionnel)' }];
-      },
-    });
+  protected onArticleSearchInput(value: string | number): void {
+    this.articleSearchQuery = String(value);
+    this.articleSearchTrigger.next(this.articleSearchQuery);
+  }
+
+  protected selectLinkedArticle(article: Article): void {
+    this.form.articleId = article.id;
+    this.selectedArticleLabel = article.title;
+    this.articleSearchQuery = '';
+    this.articleSearchResults = [];
+  }
+
+  protected clearLinkedArticle(): void {
+    this.form.articleId = '';
+    this.selectedArticleLabel = '';
   }
 
   loadPortraits(): void {
@@ -154,6 +184,8 @@ export class PortraitsComponent implements OnInit {
       signature: '',
       articleId: '',
     };
+    this.selectedArticleLabel = '';
+    this.resetArticlePicker();
     this.modalErrorMessage = '';
     this.isModalOpen = true;
   }
@@ -169,8 +201,17 @@ export class PortraitsComponent implements OnInit {
       signature: p.signature ?? '',
       articleId: p.article?.id ?? '',
     };
+    this.selectedArticleLabel = p.article?.title ?? '';
+    this.resetArticlePicker();
     this.modalErrorMessage = '';
     this.isModalOpen = true;
+  }
+
+  private resetArticlePicker(): void {
+    this.articleSearchQuery = '';
+    this.articleSearchResults = [];
+    this.articleSearchLoading = false;
+    this.articleSearchTrigger.next('');
   }
 
   closeModal(): void {
@@ -268,4 +309,3 @@ export class PortraitsComponent implements OnInit {
     return 'Une erreur est survenue.';
   }
 }
-
