@@ -74,6 +74,14 @@ export class AdminSidebarComponent {
       icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none"><path d="M6.75 18.25V10.75M12 18.25V5.75M17.25 18.25V13.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/></svg>`,
     },
     {
+      name: 'Évènements',
+      icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none"><rect x="3.75" y="5.75" width="16.5" height="14.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/><path d="M3.75 9.75H20.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M8 3.75V7.25M16 3.75V7.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+      subItems: [
+        { name: 'Tournois', path: '/admin/evenements/tournois' },
+        { name: 'Liste évènements', path: '/admin/evenements/liste' },
+      ],
+    },
+    {
       name: 'Classements',
       path: '/admin/classements',
       icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none"><path d="M7 7.5H17M7 12H15M7 16.5H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="4.75" y="4.75" width="14.5" height="14.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/></svg>`,

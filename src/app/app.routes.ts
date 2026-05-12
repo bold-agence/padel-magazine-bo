@@ -33,6 +33,8 @@ import { ClientContentComponent } from './pages/admin/client-content/client-cont
 import { ClassementsPageComponent } from './pages/admin/classements/classements-page.component';
 import { VideoTypesPageComponent } from './pages/admin/settings/video-types/video-types-page.component';
 import { SiteVideosPageComponent } from './pages/admin/settings/site-videos/site-videos-page.component';
+import { TournamentsComponent } from './pages/admin/evenements/tournaments/tournaments.component';
+import { EventsListComponent } from './pages/admin/evenements/events-list/events-list.component';
 
 export const routes: Routes = [
   {
@@ -212,6 +214,16 @@ export const routes: Routes = [
         path: 'classements',
         component: ClassementsPageComponent,
         title: 'Classements | Padel Magazine Admin',
+      },
+      {
+        path: 'evenements/tournois',
+        component: TournamentsComponent,
+        title: 'Evenements - Tournois | Padel Magazine Admin',
+      },
+      {
+        path: 'evenements/liste',
+        component: EventsListComponent,
+        title: 'Evenements - Liste | Padel Magazine Admin',
       },
     ],
   },
