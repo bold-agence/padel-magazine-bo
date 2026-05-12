@@ -41,7 +41,7 @@
           @for (v of videos; track v.id) {
             <tr class="border-t border-gray-100 dark:border-gray-800">
               <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ v.title }}</td>
-              <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ v.videoType?.title ?? '-' }}</td>
+              <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ v.videoType.title }}</td>
               <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
                 <a
                   class="text-brand-600 hover:underline dark:text-brand-400"

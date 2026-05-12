@@ -101,7 +101,7 @@ export class SiteVideosPageComponent implements OnInit {
     this.form = {
       title: v.title,
       youtubeLink: v.youtubeLink,
-      videoTypeId: v.videoType?.id ?? '',
+      videoTypeId: v.videoType.id,
     };
     this.modalErrorMessage = '';
     this.isModalOpen = true;
