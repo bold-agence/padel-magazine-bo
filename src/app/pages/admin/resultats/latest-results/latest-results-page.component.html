@@ -1,0 +1,252 @@
+<div class="space-y-6">
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Derniers résultats</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        Enregistrez les résultats affichés dans le tableau public de la page Résultats.
+      </p>
+    </div>
+    <app-button size="sm" (btnClick)="openCreateModal()">Ajouter un résultat</app-button>
+  </div>
+
+  @if (errorMessage) {
+    <div
+      class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300"
+    >
+      {{ errorMessage }}
+    </div>
+  }
+
+  <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-800/50">
+        <tr>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Période</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Tournoi</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Tour</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Résultat</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Catégorie</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Statut</th>
+          <th class="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (isLoading) {
+          <tr>
+            <td colspan="7" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Chargement...</td>
+          </tr>
+        } @else if (!items.length) {
+          <tr>
+            <td colspan="7" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Aucun résultat.</td>
+          </tr>
+        } @else {
+          @for (row of items; track row.id) {
+            <tr class="border-t border-gray-100 dark:border-gray-800">
+              <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ periodLabel(row) }}</td>
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-2">
+                  <span class="size-2 rounded-full" [style.background]="categoryColor(row.category)"></span>
+                  <div>
+                    <p class="font-medium text-gray-900 dark:text-white">{{ row.tournamentName }}</p>
+                    @if (row.location) {
+                      <p class="text-xs text-gray-500 dark:text-gray-400">{{ row.location }}</p>
+                    }
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ row.round }}</td>
+              <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
+                <span class="font-medium text-gray-900 dark:text-white">{{ row.winners }}</span>
+                <span class="mx-1 text-brand-600 dark:text-brand-400">{{ row.score }}</span>
+                <span>contre {{ row.losers }}</span>
+              </td>
+              <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ categoryLabel(row.category) }}</td>
+              <td class="px-4 py-3">
+                @if (row.isPublished) {
+                  <span class="rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-950/40 dark:text-green-300">Publié</span>
+                } @else {
+                  <span class="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300">Masqué</span>
+                }
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex justify-end gap-2">
+                  <app-button size="sm" variant="outline" className="!px-3 !py-2" (btnClick)="openEditModal(row)">
+                    Modifier
+                  </app-button>
+                  <app-button
+                    size="sm"
+                    variant="outline"
+                    className="!px-3 !py-2 !text-red-700 !ring-red-200 hover:!bg-red-50 dark:!text-red-300 dark:!ring-red-900/40 dark:hover:!bg-red-950/30"
+                    (btnClick)="openDeleteModal(row)"
+                  >
+                    Supprimer
+                  </app-button>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<app-modal [isOpen]="isModalOpen" (close)="closeModal()" [className]="'max-w-3xl p-6 lg:p-8'">
+  <h2 class="mb-1 text-lg font-semibold text-gray-900 dark:text-white">
+    @if (modalMode === 'create') {
+      Nouveau résultat
+    } @else {
+      Modifier le résultat
+    }
+  </h2>
+  <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">
+    Exemple : Riyadh Season P1, Riyadh - Saudi Arabia, période du tournoi, Finale, Coello/Tapia 6/4 6/2 contre Galan/Chingotto.
+  </p>
+
+  <div class="grid gap-4 md:grid-cols-2">
+    <label class="md:col-span-2">
+      <span class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Tournoi <span class="text-error-500">*</span></span>
+      <input
+        type="text"
+        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 outline-none focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:text-white/90"
+        [(ngModel)]="form.tournamentName"
+        name="tournamentName"
+        placeholder="RIYADH SEASON P1"
+      />
+    </label>
+
+    <label class="md:col-span-2">
+      <span class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Lieu</span>
+      <input
+        type="text"
+        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 outline-none focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:text-white/90"
+        [(ngModel)]="form.location"
+        name="location"
+        placeholder="Riyadh - Saudi Arabia"
+      />
+    </label>
+
+    <label>
+      <span class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Début <span class="text-error-500">*</span></span>
+      <input
+        type="date"
+        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 outline-none focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:text-white/90"
+        [(ngModel)]="form.startDate"
+        name="startDate"
+      />
+    </label>
+
+    <label>
+      <span class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Fin <span class="text-error-500">*</span></span>
+      <input
+        type="date"
+        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 outline-none focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:text-white/90"
+        [(ngModel)]="form.endDate"
+        name="endDate"
+      />
+    </label>
+
+    <label>
+      <span class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Tour <span class="text-error-500">*</span></span>
+      <input
+        type="text"
+        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 outline-none focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:text-white/90"
+        [(ngModel)]="form.round"
+        name="round"
+        placeholder="Finale"
+      />
+    </label>
+
+    <label>
+      <span class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Score <span class="text-error-500">*</span></span>
+      <input
+        type="text"
+        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 outline-none focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:text-white/90"
+        [(ngModel)]="form.score"
+        name="score"
+        placeholder="6/4 6/2"
+      />
+    </label>
+
+    <label>
+      <span class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Vainqueurs <span class="text-error-500">*</span></span>
+      <input
+        type="text"
+        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 outline-none focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:text-white/90"
+        [(ngModel)]="form.winners"
+        name="winners"
+        placeholder="Coello/Tapia"
+      />
+    </label>
+
+    <label>
+      <span class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Perdants <span class="text-error-500">*</span></span>
+      <input
+        type="text"
+        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 outline-none focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:text-white/90"
+        [(ngModel)]="form.losers"
+        name="losers"
+        placeholder="Galan/Chingotto"
+      />
+    </label>
+
+    <label>
+      <span class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Catégorie</span>
+      <select
+        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 outline-none focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:text-white/90"
+        [(ngModel)]="form.category"
+        name="category"
+      >
+        <option value="men">Hommes</option>
+        <option value="women">Femmes</option>
+      </select>
+    </label>
+
+    <label class="inline-flex items-center gap-3 self-end pb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+      <input
+        type="checkbox"
+        class="size-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+        [(ngModel)]="form.isPublished"
+        name="isPublished"
+      />
+      Publier sur le site
+    </label>
+  </div>
+
+  @if (modalErrorMessage) {
+    <div
+      class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300"
+    >
+      {{ modalErrorMessage }}
+    </div>
+  }
+
+  <div class="mt-6 flex justify-end gap-3">
+    <app-button variant="outline" [disabled]="isSaving" (btnClick)="closeModal()">Annuler</app-button>
+    <app-button [disabled]="isSaving" (btnClick)="submitModal()">
+      @if (isSaving) {
+        Enregistrement...
+      } @else {
+        Enregistrer
+      }
+    </app-button>
+  </div>
+</app-modal>
+
+<app-modal [isOpen]="isDeleteModalOpen" (close)="closeDeleteModal()" [className]="'max-w-md p-6 lg:p-7'">
+  <h2 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">Confirmer la suppression</h2>
+  <p class="text-sm text-gray-600 dark:text-gray-300">
+    Supprimer le résultat
+    <span class="font-medium text-gray-900 dark:text-white">{{ resultToDelete?.tournamentName }}</span> ?
+  </p>
+  <div class="mt-6 flex justify-end gap-3">
+    <app-button variant="outline" [disabled]="isDeleting" (btnClick)="closeDeleteModal()">Annuler</app-button>
+    <app-button [disabled]="isDeleting" className="!bg-red-600 hover:!bg-red-700" (btnClick)="confirmDelete()">
+      @if (isDeleting) {
+        Suppression...
+      } @else {
+        Supprimer
+      }
+    </app-button>
+  </div>
+</app-modal>
