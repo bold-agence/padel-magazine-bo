@@ -50,7 +50,7 @@ type CreateArticleForm = {
   date: string;
   readingTime: string;
   bannerImageUrl: string;
-  categoryId: string;
+  categoryIds: string[];
 };
 
 @Component({
@@ -106,7 +106,7 @@ export class CreateArticleComponent implements OnInit, OnDestroy {
     date: '',
     readingTime: '',
     bannerImageUrl: '',
-    categoryId: '',
+    categoryIds: [],
   };
 
   sections: SectionForm[] = [this.createDefaultSection(0)];
@@ -314,7 +314,7 @@ export class CreateArticleComponent implements OnInit, OnDestroy {
           date: this.toDateInputValue(article.date),
           readingTime: article.readingTime,
           bannerImageUrl: article.bannerImage ?? '',
-          categoryId: article.category?.id ?? '',
+          categoryIds: this.getArticleCategoryIds(article),
         };
         this.bannerImageFile = null;
         this.bannerImageFileName = '';
@@ -355,6 +355,22 @@ export class CreateArticleComponent implements OnInit, OnDestroy {
 
   removeTag(name: string): void {
     this.selectedTags = this.selectedTags.filter((tag) => tag !== name);
+  }
+
+  isCategorySelected(categoryId: string): boolean {
+    return this.form.categoryIds.includes(categoryId);
+  }
+
+  toggleCategory(categoryId: string, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    if (checked) {
+      if (!this.form.categoryIds.includes(categoryId)) {
+        this.form.categoryIds = [...this.form.categoryIds, categoryId];
+      }
+      return;
+    }
+
+    this.form.categoryIds = this.form.categoryIds.filter((id) => id !== categoryId);
   }
 
   private addTag(name: string): void {
@@ -401,7 +417,7 @@ export class CreateArticleComponent implements OnInit, OnDestroy {
       author,
       date,
       readingTime,
-      categoryId: this.form.categoryId.trim() || undefined,
+      categoryIds: this.form.categoryIds,
       tags,
       sections,
     };
@@ -491,7 +507,7 @@ export class CreateArticleComponent implements OnInit, OnDestroy {
       date: '',
       readingTime: '',
       bannerImageUrl: '',
-      categoryId: '',
+      categoryIds: [],
     };
     for (const section of this.sections) {
       section.editor?.destroy();
@@ -536,5 +552,14 @@ export class CreateArticleComponent implements OnInit, OnDestroy {
       section.editor = new Editor();
     }
     return section.editor;
+  }
+
+  private getArticleCategoryIds(article: Article): string[] {
+    return [
+      ...new Set([
+        article.category?.id,
+        ...(article.categories ?? []).map((category) => category.id),
+      ].filter((id): id is string => Boolean(id))),
+    ];
   }
 }

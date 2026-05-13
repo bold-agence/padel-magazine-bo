@@ -39,6 +39,7 @@ export type Article = {
   readingTime: string;
   bannerImage?: string;
   category?: ArticleCategory | null;
+  categories?: ArticleCategory[];
   tags: ArticleTag[];
   sections: ArticleSection[];
   createdAt?: string;
@@ -54,6 +55,7 @@ export type CreateArticlePayload = {
   readingTime: string;
   bannerImage?: string;
   categoryId?: string;
+  categoryIds?: string[];
   tags?: string[];
   sections?: ArticleSection[];
 };

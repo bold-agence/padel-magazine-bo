@@ -75,18 +75,30 @@
         }
       </div>
       <div class="md:col-span-2">
-        <app-label>Categorie (optionnel)</app-label>
-        <select
-          [(ngModel)]="form.categoryId"
-          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 outline-none focus:border-brand-300 dark:border-gray-700 dark:text-white/90"
-        >
-          <option value="">Aucune categorie</option>
+        <app-label>Categories (optionnel)</app-label>
+        <div class="mt-2 flex flex-wrap gap-2">
           @for (category of categories; track category.id) {
-            <option [value]="category.id">{{ category.name }}</option>
+            <label
+              class="inline-flex items-center gap-2 rounded-full border border-gray-300 px-3 py-1.5 text-sm text-gray-700 dark:border-gray-700 dark:text-gray-300"
+            >
+              <input
+                type="checkbox"
+                [checked]="isCategorySelected(category.id)"
+                (change)="toggleCategory(category.id, $event)"
+                class="size-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+              />
+              {{ category.name }}
+            </label>
           }
-        </select>
+        </div>
         @if (isLoadingCategories) {
           <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Chargement des categories...</p>
+        } @else if (!categories.length) {
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Aucune categorie disponible.</p>
+        } @else if (form.categoryIds.length) {
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            La premiere categorie selectionnée sera l'etiquette principale affichee sur le front.
+          </p>
         }
       </div>
       <div class="md:col-span-2">
