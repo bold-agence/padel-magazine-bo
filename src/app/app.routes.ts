@@ -35,6 +35,7 @@ import { VideoTypesPageComponent } from './pages/admin/settings/video-types/vide
 import { SiteVideosPageComponent } from './pages/admin/settings/site-videos/site-videos-page.component';
 import { TournamentsComponent } from './pages/admin/evenements/tournaments/tournaments.component';
 import { EventsListComponent } from './pages/admin/evenements/events-list/events-list.component';
+import { LiveComponent } from './pages/admin/live/live.component';
 
 export const routes: Routes = [
   {
@@ -224,6 +225,11 @@ export const routes: Routes = [
         path: 'evenements/liste',
         component: EventsListComponent,
         title: 'Evenements - Liste | Padel Magazine Admin',
+      },
+      {
+        path: 'live',
+        component: LiveComponent,
+        title: 'Live | Padel Magazine Admin',
       },
     ],
   },

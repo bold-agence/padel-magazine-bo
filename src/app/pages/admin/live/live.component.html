@@ -1,0 +1,341 @@
+<div class="space-y-8">
+  <!-- En-tête -->
+  <div>
+    <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Live</h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400">
+      Configurez votre chaîne et gérez les lives des évènements.
+    </p>
+  </div>
+
+  <!-- Section : Informations générales -->
+  <section
+    class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900"
+  >
+    <div class="mb-5">
+      <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+        Informations générales
+      </h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        La chaîne sur laquelle les lives sont diffusés.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div>
+        <app-label>Nom de la chaîne <span class="text-error-500">*</span></app-label>
+        <app-input-field
+          [(value)]="channelName"
+          placeholder="Ex. Padel Magazine TV"
+        />
+      </div>
+      <div>
+        <app-label>Lien de la chaîne <span class="text-error-500">*</span></app-label>
+        <app-input-field
+          [(value)]="channelUrl"
+          placeholder="https://youtube.com/@padelmagazine"
+        />
+      </div>
+    </div>
+
+    @if (channelErrorMessage) {
+      <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300">
+        {{ channelErrorMessage }}
+      </div>
+    }
+    @if (channelSavedMessage) {
+      <div class="mt-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-900/40 dark:bg-green-950/30 dark:text-green-300">
+        {{ channelSavedMessage }}
+      </div>
+    }
+
+    <div class="mt-5 flex justify-end">
+      <app-button
+        size="sm"
+        [disabled]="isSavingChannel"
+        (btnClick)="saveChannel()"
+      >
+        @if (isSavingChannel) { Enregistrement... } @else { Enregistrer }
+      </app-button>
+    </div>
+  </section>
+
+  <!-- Section : Liste des lives -->
+  <section class="space-y-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+          Lives planifiés
+        </h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Programmez un live pour chaque évènement diffusé.
+        </p>
+      </div>
+      <app-button size="sm" (btnClick)="openCreateModal()">
+        Ajouter un live
+      </app-button>
+    </div>
+
+    @if (errorMessage) {
+      <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300">
+        {{ errorMessage }}
+      </div>
+    }
+
+    @if (isLoading) {
+      <div class="rounded-2xl border border-gray-200 bg-white p-10 text-center text-sm text-gray-500 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400">
+        Chargement des lives...
+      </div>
+    } @else if (!lives.length) {
+      <div class="rounded-2xl border border-dashed border-gray-300 bg-white p-10 text-center dark:border-gray-700 dark:bg-gray-900">
+        <h3 class="text-base font-medium text-gray-700 dark:text-gray-200">Aucun live</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          Ajoutez un live pour le rendre visible aux spectateurs.
+        </p>
+      </div>
+    } @else {
+      <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+            <thead class="bg-gray-50 dark:bg-gray-800/50">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Évènement</th>
+                <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Horaires</th>
+                <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Lien live</th>
+                <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Replay</th>
+                <th class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+              @for (live of lives; track live.id) {
+                <tr class="hover:bg-gray-50/60 dark:hover:bg-gray-800/40">
+                  <td class="px-4 py-3">
+                    <div class="flex items-center gap-3">
+                      <div class="h-10 w-14 shrink-0 overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800">
+                        @if (live.coverImageUrl) {
+                          <img [src]="live.coverImageUrl" [alt]="live.eventTitle" class="h-full w-full object-cover" />
+                        } @else {
+                          <div class="flex h-full w-full items-center justify-center text-gray-400 dark:text-gray-500">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                              <rect x="3.75" y="5.75" width="16.5" height="12.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/>
+                              <circle cx="9" cy="11" r="1.75" stroke="currentColor" stroke-width="1.5"/>
+                              <path d="M4 16.75L9 12.25L14 16.5L17 14L20.25 17.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                          </div>
+                        }
+                      </div>
+                      <div class="min-w-0">
+                        <p class="truncate text-sm font-medium text-gray-900 dark:text-white">{{ live.eventTitle }}</p>
+                        <p class="truncate text-xs text-gray-500 dark:text-gray-400">{{ formatDateTime(live.eventStartAt) }}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                    <span class="whitespace-nowrap">
+                      {{ live.startTime }}@if (live.endTime) { <span class="text-gray-400"> → </span>{{ live.endTime }} }
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 text-sm">
+                    <a
+                      [href]="live.liveUrl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="inline-flex items-center gap-1 text-brand-600 hover:underline dark:text-brand-400 max-w-[260px] truncate"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <path d="M14 4.75H19.25V10M9.75 14.25L19 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M19.25 13.5V17.25C19.25 18.3546 18.3546 19.25 17.25 19.25H6.75C5.64543 19.25 4.75 18.3546 4.75 17.25V6.75C4.75 5.64543 5.64543 4.75 6.75 4.75H10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      <span class="truncate">{{ live.liveUrl }}</span>
+                    </a>
+                  </td>
+                  <td class="px-4 py-3 text-sm">
+                    @if (live.replayUrl) {
+                      <a
+                        [href]="live.replayUrl"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="inline-flex items-center gap-1 text-gray-700 hover:underline dark:text-gray-200 max-w-[260px] truncate"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                          <path d="M9 7.5L15 12L9 16.5V7.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                          <circle cx="12" cy="12" r="8.25" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
+                        <span class="truncate">{{ live.replayUrl }}</span>
+                      </a>
+                    } @else {
+                      <span class="text-xs text-gray-400">—</span>
+                    }
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="flex items-center justify-end gap-2">
+                      <app-button
+                        size="sm"
+                        variant="outline"
+                        className="!px-3 !py-1.5"
+                        (btnClick)="openEditModal(live)"
+                      >Modifier</app-button>
+                      <app-button
+                        size="sm"
+                        variant="outline"
+                        className="!px-3 !py-1.5 !text-red-700 !ring-red-200 hover:!bg-red-50 dark:!text-red-300 dark:!ring-red-900/40 dark:hover:!bg-red-950/30"
+                        (btnClick)="openDeleteModal(live)"
+                      >Supprimer</app-button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  </section>
+</div>
+
+<!-- Modale création / édition -->
+<app-modal
+  [isOpen]="isModalOpen"
+  [centered]="true"
+  (close)="closeModal()"
+  [className]="'max-w-xl p-6 lg:p-8'"
+>
+  <h2 class="mb-1 text-lg font-semibold text-gray-900 dark:text-white">
+    @if (modalMode === 'create') { Ajouter un live } @else { Modifier le live }
+  </h2>
+  <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
+    Renseignez les informations de diffusion du live.
+  </p>
+
+  <div class="space-y-5">
+    <div>
+      <app-label>Image de couverture</app-label>
+      @if (getFormCoverPreview(); as previewUrl) {
+        <div class="relative mb-3 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+          <img [src]="previewUrl" alt="Aperçu" class="h-48 w-full object-cover" />
+          <button
+            type="button"
+            (click)="removeCoverInForm()"
+            class="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-red-600/90 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700"
+          >
+            Retirer
+          </button>
+        </div>
+      }
+      <label
+        class="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-6 text-center transition hover:border-gray-400 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800/50 dark:hover:border-gray-600 dark:hover:bg-gray-800"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="text-gray-500 dark:text-gray-400">
+          <path d="M12 16V8M12 8L9 11M12 8L15 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="3.75" y="3.75" width="16.5" height="16.5" rx="3" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        <span class="mt-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+          @if (form.coverImageName) { {{ form.coverImageName }} }
+          @else { Choisir une image }
+        </span>
+        <span class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">PNG, JPG (recommandé : 1600x900)</span>
+        <input type="file" accept="image/*" class="hidden" (change)="onCoverSelected($event)" />
+      </label>
+    </div>
+
+    <div>
+      <app-label>Évènement <span class="text-error-500">*</span></app-label>
+      @if (isLoadingEvents) {
+        <p class="text-sm text-gray-500 dark:text-gray-400">Chargement des évènements...</p>
+      } @else if (!events.length) {
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Aucun évènement disponible. Créez d’abord un évènement.
+        </p>
+      } @else {
+        @let takenIds = takenEventIds();
+        <select
+          [(ngModel)]="form.eventId"
+          class="h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+        >
+          <option value="">— Sélectionner un évènement —</option>
+          @for (event of events; track event.id) {
+            <option [value]="event.id" [disabled]="takenIds.has(event.id)">
+              {{ event.title }} — {{ formatDateTime(event.startAt) }}
+              @if (takenIds.has(event.id)) { (déjà un live) }
+            </option>
+          }
+        </select>
+        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          Un évènement ne peut avoir qu’un seul live.
+        </p>
+      }
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div>
+        <app-label>Heure de début <span class="text-error-500">*</span></app-label>
+        <input
+          type="time"
+          [(ngModel)]="form.startTime"
+          class="h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+        />
+      </div>
+      <div>
+        <app-label>Heure de fin (optionnel)</app-label>
+        <input
+          type="time"
+          [(ngModel)]="form.endTime"
+          class="h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+        />
+      </div>
+    </div>
+
+    <div>
+      <app-label>Lien du live <span class="text-error-500">*</span></app-label>
+      <app-input-field
+        [(value)]="form.liveUrl"
+        placeholder="https://youtube.com/live/..."
+      />
+    </div>
+
+    <div>
+      <app-label>Lien de replay (optionnel)</app-label>
+      <app-input-field
+        [(value)]="form.replayUrl"
+        placeholder="https://youtube.com/watch?v=..."
+      />
+    </div>
+  </div>
+
+  @if (modalErrorMessage) {
+    <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300">
+      {{ modalErrorMessage }}
+    </div>
+  }
+
+  <div class="mt-6 flex justify-end gap-3">
+    <app-button variant="outline" (btnClick)="closeModal()">Annuler</app-button>
+    <app-button [disabled]="isSaving" (btnClick)="submitModal()">
+      @if (isSaving) { Enregistrement... } @else { Enregistrer }
+    </app-button>
+  </div>
+</app-modal>
+
+<!-- Modale suppression -->
+<app-modal
+  [isOpen]="isDeleteModalOpen"
+  [centered]="true"
+  (close)="closeDeleteModal()"
+  [className]="'max-w-md p-6 lg:p-7'"
+>
+  <h2 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+    Confirmer la suppression
+  </h2>
+  <p class="text-sm text-gray-600 dark:text-gray-300">
+    Voulez-vous vraiment supprimer le live de
+    <span class="font-medium text-gray-900 dark:text-white">{{ liveToDelete?.eventTitle }}</span>
+    ?
+  </p>
+  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Cette action est irréversible.</p>
+
+  <div class="mt-6 flex justify-end gap-3">
+    <app-button variant="outline" [disabled]="isDeleting" (btnClick)="closeDeleteModal()">Annuler</app-button>
+    <app-button [disabled]="isDeleting" className="!bg-red-600 hover:!bg-red-700" (btnClick)="confirmDelete()">
+      @if (isDeleting) { Suppression... } @else { Supprimer }
+    </app-button>
+  </div>
+</app-modal>
