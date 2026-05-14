@@ -7,6 +7,7 @@ import {
   LatestResult,
   LatestResultCategory,
   LatestResultPayload,
+  LatestResultScope,
   LatestResultsService,
 } from '../../../../core/services/latest-results.service';
 
@@ -21,6 +22,7 @@ type ResultForm = {
   score: string;
   losers: string;
   category: LatestResultCategory;
+  scopeId: string;
   isPublished: boolean;
 };
 
@@ -32,8 +34,11 @@ type ResultForm = {
 })
 export class LatestResultsPageComponent implements OnInit {
   items: LatestResult[] = [];
+  scopes: LatestResultScope[] = [];
   isLoading = false;
+  isLoadingScopes = false;
   errorMessage = '';
+  activeScopeFilter: string | 'all' = 'all';
 
   isModalOpen = false;
   isSaving = false;
@@ -49,7 +54,42 @@ export class LatestResultsPageComponent implements OnInit {
   constructor(private readonly latestResultsService: LatestResultsService) {}
 
   ngOnInit(): void {
+    this.loadScopes();
     this.load();
+  }
+
+  get filteredItems(): LatestResult[] {
+    if (this.activeScopeFilter === 'all') {
+      return this.items;
+    }
+    return this.items.filter((item) => item.scope?.id === this.activeScopeFilter);
+  }
+
+  setScopeFilter(scopeId: string | 'all'): void {
+    this.activeScopeFilter = scopeId;
+  }
+
+  loadScopes(): void {
+    this.isLoadingScopes = true;
+    this.latestResultsService.findScopesAdmin().subscribe({
+      next: (scopes) => {
+        this.scopes = scopes;
+        if (!this.form.scopeId) {
+          this.form.scopeId = this.defaultScopeId();
+        }
+        if (
+          this.activeScopeFilter !== 'all' &&
+          !this.scopes.some((scope) => scope.id === this.activeScopeFilter)
+        ) {
+          this.activeScopeFilter = 'all';
+        }
+        this.isLoadingScopes = false;
+      },
+      error: () => {
+        this.errorMessage = 'Impossible de charger les classements de résultats.';
+        this.isLoadingScopes = false;
+      },
+    });
   }
 
   load(): void {
@@ -89,6 +129,7 @@ export class LatestResultsPageComponent implements OnInit {
       score: row.score,
       losers: row.losers,
       category: row.category,
+      scopeId: row.scope?.id ?? this.defaultScopeId(),
       isPublished: row.isPublished,
     };
     this.modalErrorMessage = '';
@@ -169,6 +210,10 @@ export class LatestResultsPageComponent implements OnInit {
     return colors[category] ?? colors.men;
   }
 
+  scopeLabel(scope?: LatestResultScope | null): string {
+    return scope?.name ?? 'Non classé';
+  }
+
   periodLabel(row: LatestResult): string {
     if (row.startDate && row.endDate) {
       return this.formatPeriod(row.startDate, row.endDate);
@@ -188,6 +233,7 @@ export class LatestResultsPageComponent implements OnInit {
       score: '',
       losers: '',
       category: 'men',
+      scopeId: this.defaultScopeId(),
       isPublished: true,
     };
   }
@@ -200,9 +246,9 @@ export class LatestResultsPageComponent implements OnInit {
     const losers = this.form.losers.trim();
     const resultDate = this.form.endDate || this.form.startDate || this.form.resultDate;
 
-    if (!tournamentName || !this.form.startDate || !this.form.endDate || !round || !winners || !score || !losers) {
+    if (!tournamentName || !this.form.startDate || !this.form.endDate || !round || !winners || !score || !losers || !this.form.scopeId) {
       this.modalErrorMessage =
-        'Tournoi, période, tour, vainqueurs, score et perdants sont obligatoires.';
+        'Tournoi, période, classement, tour, vainqueurs, score et perdants sont obligatoires.';
       return null;
     }
 
@@ -217,8 +263,17 @@ export class LatestResultsPageComponent implements OnInit {
       score,
       losers,
       category: this.form.category,
+      scopeId: this.form.scopeId,
       isPublished: this.form.isPublished,
     };
+  }
+
+  private defaultScopeId(): string {
+    return (
+      this.scopes.find((scope) => scope.slug === 'international')?.id ??
+      this.scopes[0]?.id ??
+      ''
+    );
   }
 
   private formatPeriod(startDate: string, endDate: string): string {

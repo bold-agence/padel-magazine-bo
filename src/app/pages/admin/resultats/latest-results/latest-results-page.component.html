@@ -17,6 +17,37 @@
     </div>
   }
 
+  <div class="flex flex-wrap gap-2">
+    <button
+      type="button"
+      class="rounded-lg border px-3 py-2 text-sm font-medium transition"
+      [class.border-brand-500]="activeScopeFilter === 'all'"
+      [class.bg-brand-50]="activeScopeFilter === 'all'"
+      [class.text-brand-700]="activeScopeFilter === 'all'"
+      [class.border-gray-200]="activeScopeFilter !== 'all'"
+      [class.text-gray-600]="activeScopeFilter !== 'all'"
+      [class.hover:bg-gray-50]="activeScopeFilter !== 'all'"
+      (click)="setScopeFilter('all')"
+    >
+      Tous
+    </button>
+    @for (scope of scopes; track scope.id) {
+      <button
+        type="button"
+        class="rounded-lg border px-3 py-2 text-sm font-medium transition"
+        [class.border-brand-500]="activeScopeFilter === scope.id"
+        [class.bg-brand-50]="activeScopeFilter === scope.id"
+        [class.text-brand-700]="activeScopeFilter === scope.id"
+        [class.border-gray-200]="activeScopeFilter !== scope.id"
+        [class.text-gray-600]="activeScopeFilter !== scope.id"
+        [class.hover:bg-gray-50]="activeScopeFilter !== scope.id"
+        (click)="setScopeFilter(scope.id)"
+      >
+        {{ scope.name }}
+      </button>
+    }
+  </div>
+
   <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
     <table class="min-w-full text-sm">
       <thead class="bg-gray-50 dark:bg-gray-800/50">
@@ -25,6 +56,7 @@
           <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Tournoi</th>
           <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Tour</th>
           <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Résultat</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Classement</th>
           <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Catégorie</th>
           <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Statut</th>
           <th class="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Actions</th>
@@ -33,14 +65,14 @@
       <tbody>
         @if (isLoading) {
           <tr>
-            <td colspan="7" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Chargement...</td>
+            <td colspan="8" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Chargement...</td>
           </tr>
-        } @else if (!items.length) {
+        } @else if (!filteredItems.length) {
           <tr>
-            <td colspan="7" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Aucun résultat.</td>
+            <td colspan="8" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Aucun résultat.</td>
           </tr>
         } @else {
-          @for (row of items; track row.id) {
+          @for (row of filteredItems; track row.id) {
             <tr class="border-t border-gray-100 dark:border-gray-800">
               <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ periodLabel(row) }}</td>
               <td class="px-4 py-3">
@@ -60,6 +92,7 @@
                 <span class="mx-1 text-brand-600 dark:text-brand-400">{{ row.score }}</span>
                 <span>contre {{ row.losers }}</span>
               </td>
+              <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ scopeLabel(row.scope) }}</td>
               <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ categoryLabel(row.category) }}</td>
               <td class="px-4 py-3">
                 @if (row.isPublished) {
@@ -188,6 +221,20 @@
         name="losers"
         placeholder="Galan/Chingotto"
       />
+    </label>
+
+    <label>
+      <span class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Classement</span>
+      <select
+        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 outline-none focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:text-white/90"
+        [(ngModel)]="form.scopeId"
+        name="scopeId"
+      >
+        <option value="" disabled>Choisir un classement</option>
+        @for (scope of scopes; track scope.id) {
+          <option [value]="scope.id">{{ scope.name }}</option>
+        }
+      </select>
     </label>
 
     <label>

@@ -73,6 +73,10 @@ export class AdminSidebarComponent {
       icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none"><path d="M6.75 18.25V10.75M12 18.25V5.75M17.25 18.25V13.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/></svg>`,
       subItems: [
         {
+          name: 'Types de résultats',
+          path: '/admin/resultats/classements',
+        },
+        {
           name: 'Derniers résultats',
           path: '/admin/resultats/derniers-resultats',
         },

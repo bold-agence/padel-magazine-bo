@@ -1,0 +1,154 @@
+<div class="space-y-6">
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Classements des résultats</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        Gérez les classements utilisés pour organiser les derniers résultats sur le site.
+      </p>
+    </div>
+    <app-button size="sm" (btnClick)="openCreateModal()">Ajouter un classement</app-button>
+  </div>
+
+  @if (errorMessage) {
+    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      {{ errorMessage }}
+    </div>
+  }
+
+  @if (successMessage) {
+    <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+      {{ successMessage }}
+    </div>
+  }
+
+  <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-800/50">
+        <tr>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Nom</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Slug</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Ordre</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Statut</th>
+          <th class="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (isLoading) {
+          <tr>
+            <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Chargement...</td>
+          </tr>
+        } @else if (!scopes.length) {
+          <tr>
+            <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+              Aucun classement pour le moment.
+            </td>
+          </tr>
+        } @else {
+          @for (scope of scopes; track scope.id) {
+            <tr class="border-t border-gray-100 dark:border-gray-800">
+              <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ scope.name }}</td>
+              <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ scope.slug }}</td>
+              <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ scope.displayOrder }}</td>
+              <td class="px-4 py-3">
+                @if (scope.isActive) {
+                  <span class="rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-950/40 dark:text-green-300">Actif</span>
+                } @else {
+                  <span class="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300">Inactif</span>
+                }
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex justify-end gap-2">
+                  <app-button
+                    size="sm"
+                    variant="outline"
+                    className="!px-3 !py-2"
+                    [disabled]="isSaving"
+                    (btnClick)="openEditModal(scope)"
+                  >
+                    Modifier
+                  </app-button>
+                  <app-button
+                    size="sm"
+                    variant="outline"
+                    className="!px-3 !py-2 !text-red-700 !ring-red-200 hover:!bg-red-50 dark:!text-red-300 dark:!ring-red-900/40 dark:hover:!bg-red-950/30"
+                    [disabled]="isSaving"
+                    (btnClick)="deleteScope(scope)"
+                  >
+                    Supprimer
+                  </app-button>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<app-modal [isOpen]="isModalOpen" (close)="closeModal()" [className]="'max-w-md p-6 lg:p-7'">
+  <h2 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+    @if (modalMode === 'create') {
+      Nouveau classement
+    } @else {
+      Modifier le classement
+    }
+  </h2>
+
+  <div class="space-y-4">
+    <label class="block">
+      <span class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Nom <span class="text-error-500">*</span></span>
+      <input
+        type="text"
+        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 outline-none focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:text-white/90"
+        [ngModel]="form.name"
+        (ngModelChange)="onNameChange($event)"
+        name="name"
+        placeholder="International"
+      />
+    </label>
+
+    <label class="block">
+      <span class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Slug <span class="text-error-500">*</span></span>
+      <input
+        type="text"
+        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 outline-none focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:text-white/90"
+        [(ngModel)]="form.slug"
+        name="slug"
+        placeholder="international"
+      />
+    </label>
+
+    <label class="block">
+      <span class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Ordre d'affichage</span>
+      <input
+        type="number"
+        min="0"
+        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 outline-none focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:text-white/90"
+        [(ngModel)]="form.displayOrder"
+        name="displayOrder"
+      />
+    </label>
+
+    <label class="inline-flex items-center gap-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+      <input
+        type="checkbox"
+        class="size-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+        [(ngModel)]="form.isActive"
+        name="isActive"
+      />
+      Actif sur le site
+    </label>
+  </div>
+
+  <div class="mt-6 flex justify-end gap-3">
+    <app-button variant="outline" [disabled]="isSaving" (btnClick)="closeModal()">Annuler</app-button>
+    <app-button [disabled]="isSaving" (btnClick)="submitModal()">
+      @if (isSaving) {
+        Enregistrement...
+      } @else {
+        Enregistrer
+      }
+    </app-button>
+  </div>
+</app-modal>

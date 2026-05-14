@@ -34,6 +34,7 @@ import { ClassementsPageComponent } from './pages/admin/classements/classements-
 import { VideoTypesPageComponent } from './pages/admin/settings/video-types/video-types-page.component';
 import { SiteVideosPageComponent } from './pages/admin/settings/site-videos/site-videos-page.component';
 import { FipRankingsPageComponent } from './pages/admin/resultats/fip-rankings/fip-rankings-page.component';
+import { LatestResultScopesPageComponent } from './pages/admin/resultats/latest-result-scopes/latest-result-scopes-page.component';
 import { LatestResultsPageComponent } from './pages/admin/resultats/latest-results/latest-results-page.component';
 import { TournamentsComponent } from './pages/admin/evenements/tournaments/tournaments.component';
 import { EventsListComponent } from './pages/admin/evenements/events-list/events-list.component';
@@ -212,6 +213,11 @@ export const routes: Routes = [
         path: 'client-content',
         component: ClientContentComponent,
         title: 'Breaking News & Pubs | Padel Magazine Admin',
+      },
+      {
+        path: 'resultats/classements',
+        component: LatestResultScopesPageComponent,
+        title: 'Résultats - Classements | Padel Magazine Admin',
       },
       {
         path: 'resultats/derniers-resultats',
