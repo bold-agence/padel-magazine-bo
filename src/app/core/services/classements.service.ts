@@ -23,6 +23,9 @@ export type ClassementSummary = {
   title: string;
   pointsNowLabel: string | null;
   pointsPrevLabel: string | null;
+  podiumFirstImageUrl: string | null;
+  podiumSecondImageUrl: string | null;
+  podiumThirdImageUrl: string | null;
   lineCount: number;
   updatedAt: string;
 };
@@ -33,6 +36,9 @@ export type ClassementDetail = {
   title: string;
   pointsNowLabel: string | null;
   pointsPrevLabel: string | null;
+  podiumFirstImageUrl: string | null;
+  podiumSecondImageUrl: string | null;
+  podiumThirdImageUrl: string | null;
   createdAt?: string;
   updatedAt?: string;
   lines: ClassementLineDto[];
@@ -101,6 +107,44 @@ export class ClassementsService {
       .post<ApiEnvelope<{ imported: number }> | { imported: number }>(
         `${this.apiUrl}/${id}/import`,
         formData,
+      )
+      .pipe(map((r) => this.unwrap(r)));
+  }
+
+  uploadPodiumImages(
+    id: string,
+    payload: {
+      podiumFirst?: File;
+      podiumSecond?: File;
+      podiumThird?: File;
+      removePodiumFirst?: boolean;
+      removePodiumSecond?: boolean;
+      removePodiumThird?: boolean;
+    },
+  ): Observable<ClassementDetail> {
+    const fd = new FormData();
+    if (payload.podiumFirst) {
+      fd.append('podiumFirst', payload.podiumFirst, payload.podiumFirst.name);
+    }
+    if (payload.podiumSecond) {
+      fd.append('podiumSecond', payload.podiumSecond, payload.podiumSecond.name);
+    }
+    if (payload.podiumThird) {
+      fd.append('podiumThird', payload.podiumThird, payload.podiumThird.name);
+    }
+    if (payload.removePodiumFirst) {
+      fd.append('removePodiumFirst', 'true');
+    }
+    if (payload.removePodiumSecond) {
+      fd.append('removePodiumSecond', 'true');
+    }
+    if (payload.removePodiumThird) {
+      fd.append('removePodiumThird', 'true');
+    }
+    return this.http
+      .patch<ApiEnvelope<ClassementDetail> | ClassementDetail>(
+        `${this.apiUrl}/${id}/podium-images`,
+        fd,
       )
       .pipe(map((r) => this.unwrap(r)));
   }

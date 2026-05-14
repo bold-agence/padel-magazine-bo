@@ -135,6 +135,116 @@
       <app-label>Libellé colonne points précédents</app-label>
       <app-input-field [(value)]="form.pointsPrevLabel" placeholder="ex: Points (28/02/2026)" />
     </div>
+
+    @if (modalMode === 'edit') {
+      <div class="mt-6 border-t border-gray-200 pt-6 dark:border-gray-700">
+        <h3 class="mb-1 text-sm font-semibold text-gray-900 dark:text-white">Photos du podium</h3>
+        <p class="mb-4 text-xs text-gray-500 dark:text-gray-400">
+          Images pour le 1er, 2e et 3e du classement (affichage site). Formats : JPEG, PNG, WebP, GIF — max 5 Mo. Enregistrement
+          MinIO.
+        </p>
+        <div class="grid gap-4 sm:grid-cols-3">
+          <div class="rounded-lg border border-gray-100 p-3 dark:border-gray-800">
+            <app-label>1re place</app-label>
+            @if (podiumLocalUrls.first && !removePodiumFirst) {
+              <img
+                [src]="podiumLocalUrls.first"
+                alt=""
+                class="mb-2 h-20 w-20 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700"
+              />
+            }
+            <label
+              class="mt-1 flex cursor-pointer flex-col gap-1 text-xs text-brand-600 hover:underline dark:text-brand-400"
+            >
+              <span>{{ pendingPodiumFirst ? pendingPodiumFirst.name : 'Choisir une image…' }}</span>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                class="sr-only"
+                [disabled]="podiumSaving"
+                (change)="onPodiumFileChange('first', $event)"
+              />
+            </label>
+            <label class="mt-2 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+              <input type="checkbox" name="removePodium1" [(ngModel)]="removePodiumFirst" [disabled]="podiumSaving" />
+              Retirer l’image
+            </label>
+          </div>
+          <div class="rounded-lg border border-gray-100 p-3 dark:border-gray-800">
+            <app-label>2e place</app-label>
+            @if (podiumLocalUrls.second && !removePodiumSecond) {
+              <img
+                [src]="podiumLocalUrls.second"
+                alt=""
+                class="mb-2 h-20 w-20 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700"
+              />
+            }
+            <label
+              class="mt-1 flex cursor-pointer flex-col gap-1 text-xs text-brand-600 hover:underline dark:text-brand-400"
+            >
+              <span>{{ pendingPodiumSecond ? pendingPodiumSecond.name : 'Choisir une image…' }}</span>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                class="sr-only"
+                [disabled]="podiumSaving"
+                (change)="onPodiumFileChange('second', $event)"
+              />
+            </label>
+            <label class="mt-2 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+              <input type="checkbox" name="removePodium2" [(ngModel)]="removePodiumSecond" [disabled]="podiumSaving" />
+              Retirer l’image
+            </label>
+          </div>
+          <div class="rounded-lg border border-gray-100 p-3 dark:border-gray-800">
+            <app-label>3e place</app-label>
+            @if (podiumLocalUrls.third && !removePodiumThird) {
+              <img
+                [src]="podiumLocalUrls.third"
+                alt=""
+                class="mb-2 h-20 w-20 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700"
+              />
+            }
+            <label
+              class="mt-1 flex cursor-pointer flex-col gap-1 text-xs text-brand-600 hover:underline dark:text-brand-400"
+            >
+              <span>{{ pendingPodiumThird ? pendingPodiumThird.name : 'Choisir une image…' }}</span>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                class="sr-only"
+                [disabled]="podiumSaving"
+                (change)="onPodiumFileChange('third', $event)"
+              />
+            </label>
+            <label class="mt-2 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+              <input type="checkbox" name="removePodium3" [(ngModel)]="removePodiumThird" [disabled]="podiumSaving" />
+              Retirer l’image
+            </label>
+          </div>
+        </div>
+        @if (podiumMessage) {
+          <p
+            class="mt-3 text-sm"
+            [class.text-red-600]="podiumMessageIsError"
+            [class.dark:text-red-400]="podiumMessageIsError"
+            [class.text-gray-700]="!podiumMessageIsError"
+            [class.dark:text-gray-300]="!podiumMessageIsError"
+          >
+            {{ podiumMessage }}
+          </p>
+        }
+        <div class="mt-4">
+          <app-button size="sm" [disabled]="podiumSaving" (btnClick)="submitPodiumImages()">
+            @if (podiumSaving) {
+              Enregistrement des photos…
+            } @else {
+              Enregistrer les photos du podium
+            }
+          </app-button>
+        </div>
+      </div>
+    }
   </div>
   @if (modalErrorMessage) {
     <div
@@ -166,6 +276,35 @@
       <span class="font-medium">{{ previewDetail.title }}</span>
       — {{ previewDetail.lines.length }} ligne(s)
     </p>
+    @if (
+      previewDetail.podiumFirstImageUrl ||
+      previewDetail.podiumSecondImageUrl ||
+      previewDetail.podiumThirdImageUrl
+    ) {
+      <div class="mb-3 flex flex-wrap gap-2">
+        @if (previewDetail.podiumFirstImageUrl) {
+          <img
+            [src]="previewDetail.podiumFirstImageUrl"
+            alt="1re"
+            class="h-14 w-14 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700"
+          />
+        }
+        @if (previewDetail.podiumSecondImageUrl) {
+          <img
+            [src]="previewDetail.podiumSecondImageUrl"
+            alt="2e"
+            class="h-14 w-14 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700"
+          />
+        }
+        @if (previewDetail.podiumThirdImageUrl) {
+          <img
+            [src]="previewDetail.podiumThirdImageUrl"
+            alt="3e"
+            class="h-14 w-14 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700"
+          />
+        }
+      </div>
+    }
     <div class="max-h-[60vh] overflow-auto rounded-lg border border-gray-200 dark:border-gray-700">
       <table class="min-w-full text-xs sm:text-sm">
         <thead class="sticky top-0 bg-gray-50 dark:bg-gray-800">
