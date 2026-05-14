@@ -117,6 +117,21 @@ export class CreateArticleComponent implements OnInit, OnDestroy {
     private readonly router: Router,
   ) {}
 
+  /** Reprend la pagination et la recherche liste (`returnPage`, `returnQ` depuis la liste articles). */
+  private listQueryParams(): Record<string, string | number> {
+    const out: Record<string, string | number> = {};
+    const raw = this.route.snapshot.queryParamMap.get('returnPage');
+    const page = Number(raw);
+    if (Number.isFinite(page) && page > 0) {
+      out['page'] = page;
+    }
+    const rq = this.route.snapshot.queryParamMap.get('returnQ')?.trim();
+    if (rq) {
+      out['q'] = rq;
+    }
+    return out;
+  }
+
   ngOnInit(): void {
     this.loadCategories();
     this.loadTags();
@@ -238,7 +253,7 @@ export class CreateArticleComponent implements OnInit, OnDestroy {
           this.successMessage = this.isEditMode
             ? 'Article modifie avec succes.'
             : 'Article cree avec succes.';
-          this.router.navigate(['/admin/articles']);
+          this.router.navigate(['/admin/articles'], { queryParams: this.listQueryParams() });
         },
         error: (error: unknown) => {
           this.isSaving = false;
@@ -272,7 +287,7 @@ export class CreateArticleComponent implements OnInit, OnDestroy {
 
 
   cancel(): void {
-    this.router.navigate(['/admin/articles']);
+    this.router.navigate(['/admin/articles'], { queryParams: this.listQueryParams() });
   }
 
   private loadCategories(): void {

@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ButtonComponent } from '../../../shared/components/ui/button/button.component';
 import { ModalComponent } from '../../../shared/components/ui/modal/modal.component';
@@ -14,6 +15,7 @@ import {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     ButtonComponent,
     ModalComponent,
   ],
@@ -33,6 +35,11 @@ export class ArticlesComponent implements OnInit {
   hasNextPage = false;
   pageNumbers: number[] = [1];
 
+  /** Texte de recherche affiché (synchronisé avec l’URL `q` après navigation). */
+  searchDraft = '';
+  /** Dernière recherche appliquée (issue de l’URL), pour les libellés vides / retour éditeur. */
+  activeSearch = '';
+
   constructor(
     private readonly articlesService: ArticlesService,
     private readonly route: ActivatedRoute,
@@ -43,14 +50,17 @@ export class ArticlesComponent implements OnInit {
     this.route.queryParamMap.subscribe((params) => {
       const rawPage = Number(params.get('page') ?? '1');
       const page = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
-      this.loadArticles(page);
+      const q = (params.get('q') ?? '').trim();
+      this.activeSearch = q;
+      this.searchDraft = q;
+      this.loadArticles(page, q);
     });
   }
 
-  loadArticles(page = 1): void {
+  loadArticles(page = 1, q = ''): void {
     this.isLoading = true;
     this.errorMessage = '';
-    this.articlesService.findPaginated(page, this.pageSize, 'all', true).subscribe({
+    this.articlesService.findPaginated(page, this.pageSize, 'all', true, false, q || undefined).subscribe({
       next: (response: PaginatedArticlesResponse) => {
         this.articles = response.items;
         this.currentPage = response.pagination.page;
@@ -79,19 +89,51 @@ export class ArticlesComponent implements OnInit {
     if (this.isLoading || page < 1 || page > this.totalPages || page === this.currentPage) {
       return;
     }
+    const q = this.route.snapshot.queryParamMap.get('q')?.trim() ?? '';
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { page },
-      queryParamsHandling: 'merge',
+      queryParams: {
+        page,
+        q: q || null,
+      },
+    });
+  }
+
+  applySearch(): void {
+    const q = String(this.searchDraft ?? '').trim();
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        page: 1,
+        q: q || null,
+      },
+    });
+  }
+
+  clearSearch(): void {
+    this.searchDraft = '';
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page: 1, q: null },
     });
   }
 
   openCreateModal(): void {
-    this.router.navigate(['/admin/articles/create']);
+    this.router.navigate(['/admin/articles/create'], {
+      queryParams: {
+        returnPage: this.currentPage,
+        ...(this.activeSearch ? { returnQ: this.activeSearch } : {}),
+      },
+    });
   }
 
   openEditModal(article: Article): void {
-    this.router.navigate(['/admin/articles', article.id, 'edit']);
+    this.router.navigate(['/admin/articles', article.id, 'edit'], {
+      queryParams: {
+        returnPage: this.currentPage,
+        ...(this.activeSearch ? { returnQ: this.activeSearch } : {}),
+      },
+    });
   }
 
   openDeleteModal(article: Article): void {
@@ -114,7 +156,10 @@ export class ArticlesComponent implements OnInit {
 
     this.isDeleting = true;
     this.articlesService.remove(this.articleToDelete.id).subscribe({
-      next: () => this.loadArticles(this.currentPage),
+      next: () => {
+        const q = this.route.snapshot.queryParamMap.get('q')?.trim() ?? '';
+        this.loadArticles(this.currentPage, q);
+      },
       error: () => {
         this.errorMessage = 'Suppression impossible pour le moment.';
         this.isDeleting = false;

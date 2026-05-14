@@ -61,6 +61,22 @@ export class ClassementsPageComponent implements OnInit {
   isImporting = false;
   importMessage = '';
 
+  /** Photos podium (édition uniquement) */
+  podiumSaving = false;
+  podiumMessage = '';
+  podiumMessageIsError = false;
+  podiumLocalUrls: { first: string | null; second: string | null; third: string | null } = {
+    first: null,
+    second: null,
+    third: null,
+  };
+  removePodiumFirst = false;
+  removePodiumSecond = false;
+  removePodiumThird = false;
+  pendingPodiumFirst: File | null = null;
+  pendingPodiumSecond: File | null = null;
+  pendingPodiumThird: File | null = null;
+
   constructor(private readonly classementsService: ClassementsService) {}
 
   ngOnInit(): void {
@@ -87,6 +103,7 @@ export class ClassementsPageComponent implements OnInit {
     this.editingId = null;
     this.form = { slug: '', title: '', pointsNowLabel: '', pointsPrevLabel: '' };
     this.modalErrorMessage = '';
+    this.resetPodiumFormState();
     this.isModalOpen = true;
   }
 
@@ -100,12 +117,97 @@ export class ClassementsPageComponent implements OnInit {
       pointsPrevLabel: row.pointsPrevLabel ?? '',
     };
     this.modalErrorMessage = '';
+    this.podiumMessage = '';
+    this.podiumMessageIsError = false;
+    this.podiumLocalUrls = {
+      first: row.podiumFirstImageUrl ?? null,
+      second: row.podiumSecondImageUrl ?? null,
+      third: row.podiumThirdImageUrl ?? null,
+    };
+    this.removePodiumFirst = false;
+    this.removePodiumSecond = false;
+    this.removePodiumThird = false;
+    this.pendingPodiumFirst = null;
+    this.pendingPodiumSecond = null;
+    this.pendingPodiumThird = null;
     this.isModalOpen = true;
   }
 
   closeModal(): void {
-    if (this.isSaving) return;
+    if (this.isSaving || this.podiumSaving) return;
     this.isModalOpen = false;
+    this.resetPodiumFormState();
+  }
+
+  onPodiumFileChange(which: 'first' | 'second' | 'third', event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    input.value = '';
+    if (which === 'first') {
+      this.pendingPodiumFirst = file;
+      if (file) this.removePodiumFirst = false;
+    } else if (which === 'second') {
+      this.pendingPodiumSecond = file;
+      if (file) this.removePodiumSecond = false;
+    } else {
+      this.pendingPodiumThird = file;
+      if (file) this.removePodiumThird = false;
+    }
+  }
+
+  submitPodiumImages(): void {
+    if (!this.editingId || this.podiumSaving) return;
+    this.podiumSaving = true;
+    this.podiumMessage = '';
+    this.podiumMessageIsError = false;
+    this.classementsService
+      .uploadPodiumImages(this.editingId, {
+        podiumFirst: this.pendingPodiumFirst ?? undefined,
+        podiumSecond: this.pendingPodiumSecond ?? undefined,
+        podiumThird: this.pendingPodiumThird ?? undefined,
+        removePodiumFirst: this.removePodiumFirst,
+        removePodiumSecond: this.removePodiumSecond,
+        removePodiumThird: this.removePodiumThird,
+      })
+      .subscribe({
+        next: (detail) => {
+          this.podiumSaving = false;
+          this.pendingPodiumFirst = null;
+          this.pendingPodiumSecond = null;
+          this.pendingPodiumThird = null;
+          this.removePodiumFirst = false;
+          this.removePodiumSecond = false;
+          this.removePodiumThird = false;
+          this.podiumLocalUrls = {
+            first: detail.podiumFirstImageUrl ?? null,
+            second: detail.podiumSecondImageUrl ?? null,
+            third: detail.podiumThirdImageUrl ?? null,
+          };
+          this.podiumMessage = 'Photos du podium enregistrées.';
+          this.podiumMessageIsError = false;
+          this.load();
+          if (this.previewDetail?.id === this.editingId) {
+            this.previewDetail = { ...this.previewDetail, ...detail };
+          }
+        },
+        error: (e: unknown) => {
+          this.podiumSaving = false;
+          this.podiumMessage = this.parseApiError(e);
+          this.podiumMessageIsError = true;
+        },
+      });
+  }
+
+  private resetPodiumFormState(): void {
+    this.podiumMessage = '';
+    this.podiumMessageIsError = false;
+    this.podiumLocalUrls = { first: null, second: null, third: null };
+    this.removePodiumFirst = false;
+    this.removePodiumSecond = false;
+    this.removePodiumThird = false;
+    this.pendingPodiumFirst = null;
+    this.pendingPodiumSecond = null;
+    this.pendingPodiumThird = null;
   }
 
   submitModal(): void {
