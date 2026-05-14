@@ -87,11 +87,15 @@ export class ArticlesComponent implements OnInit {
   }
 
   openCreateModal(): void {
-    this.router.navigate(['/admin/articles/create']);
+    this.router.navigate(['/admin/articles/create'], {
+      queryParams: { returnPage: this.currentPage },
+    });
   }
 
   openEditModal(article: Article): void {
-    this.router.navigate(['/admin/articles', article.id, 'edit']);
+    this.router.navigate(['/admin/articles', article.id, 'edit'], {
+      queryParams: { returnPage: this.currentPage },
+    });
   }
 
   openDeleteModal(article: Article): void {
