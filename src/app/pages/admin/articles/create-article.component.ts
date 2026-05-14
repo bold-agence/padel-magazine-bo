@@ -117,14 +117,19 @@ export class CreateArticleComponent implements OnInit, OnDestroy {
     private readonly router: Router,
   ) {}
 
-  /** Reprend la pagination liste (query `returnPage` passée depuis la liste articles). */
-  private listQueryParams(): { page: number } | Record<string, never> {
+  /** Reprend la pagination et la recherche liste (`returnPage`, `returnQ` depuis la liste articles). */
+  private listQueryParams(): Record<string, string | number> {
+    const out: Record<string, string | number> = {};
     const raw = this.route.snapshot.queryParamMap.get('returnPage');
     const page = Number(raw);
     if (Number.isFinite(page) && page > 0) {
-      return { page };
+      out['page'] = page;
     }
-    return {};
+    const rq = this.route.snapshot.queryParamMap.get('returnQ')?.trim();
+    if (rq) {
+      out['q'] = rq;
+    }
+    return out;
   }
 
   ngOnInit(): void {
