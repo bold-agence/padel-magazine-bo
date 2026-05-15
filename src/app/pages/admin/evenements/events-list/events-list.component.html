@@ -132,13 +132,22 @@
 
             @if (event.tournamentLabel) {
               <span
-                class="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-gray-800 backdrop-blur-sm dark:bg-gray-900/80 dark:text-gray-100"
+                class="absolute left-3 top-3 inline-flex max-w-[calc(100%-1.5rem)] flex-col gap-1"
               >
                 <span
-                  class="h-2 w-2 rounded-full"
-                  [style.background-color]="event.tournamentColor || '#9ca3af'"
-                ></span>
-                {{ event.tournamentLabel }}
+                  class="inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-gray-800 backdrop-blur-sm dark:bg-gray-900/80 dark:text-gray-100"
+                >
+                  <span
+                    class="h-2 w-2 shrink-0 rounded-full"
+                    [style.background-color]="event.tournamentColor || '#9ca3af'"
+                  ></span>
+                  <span class="truncate">{{ event.tournamentLabel }}</span>
+                </span>
+                @if (event.tournamentCategoryLabel) {
+                  <span class="rounded-md bg-black/55 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+                    {{ event.tournamentCategoryLabel }}
+                  </span>
+                }
               </span>
             }
           </div>
@@ -205,7 +214,7 @@
               <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Évènement</th>
               <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Date</th>
               <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Lieu</th>
-              <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Tournois</th>
+              <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Tournois / catégorie</th>
               <th class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Actions</th>
             </tr>
           </thead>
@@ -244,15 +253,20 @@
                 </td>
                 <td class="px-4 py-3">
                   @if (event.tournamentLabel) {
-                    <span
-                      class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium"
-                      [style.background-color]="(event.tournamentColor || '#9ca3af') + '1A'"
-                      [style.border-color]="(event.tournamentColor || '#9ca3af') + '40'"
-                      [style.color]="event.tournamentColor || '#374151'"
-                    >
-                      <span class="h-1.5 w-1.5 rounded-full" [style.background-color]="event.tournamentColor || '#9ca3af'"></span>
-                      {{ event.tournamentLabel }}
-                    </span>
+                    <div class="flex flex-col gap-1">
+                      <span
+                        class="inline-flex w-fit max-w-[220px] items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium"
+                        [style.background-color]="(event.tournamentColor || '#9ca3af') + '1A'"
+                        [style.border-color]="(event.tournamentColor || '#9ca3af') + '40'"
+                        [style.color]="event.tournamentColor || '#374151'"
+                      >
+                        <span class="h-1.5 w-1.5 shrink-0 rounded-full" [style.background-color]="event.tournamentColor || '#9ca3af'"></span>
+                        <span class="truncate">{{ event.tournamentLabel }}</span>
+                      </span>
+                      @if (event.tournamentCategoryLabel) {
+                        <span class="truncate text-xs text-gray-500 dark:text-gray-400">{{ event.tournamentCategoryLabel }}</span>
+                      }
+                    </div>
                   } @else {
                     <span class="text-xs text-gray-400">—</span>
                   }
@@ -377,7 +391,7 @@
         <div class="flex flex-wrap gap-2">
           <button
             type="button"
-            (click)="form.tournamentId = ''"
+            (click)="onSelectTournamentForEvent('')"
             class="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition"
             [ngClass]="form.tournamentId === ''
               ? 'border-gray-900 bg-gray-900 text-white dark:border-white dark:bg-white dark:text-gray-900'
@@ -390,7 +404,7 @@
             @let selected = form.tournamentId === tournament.id;
             <button
               type="button"
-              (click)="form.tournamentId = tournament.id"
+              (click)="onSelectTournamentForEvent(tournament.id)"
               class="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition"
               [style.background-color]="selected ? tournament.colorCode + '33' : tournament.colorCode + '1A'"
               [style.border-color]="selected ? tournament.colorCode : tournament.colorCode + '40'"
@@ -405,6 +419,29 @@
         </div>
       }
     </div>
+
+    @if (isPremierPadelFormTournament()) {
+      <div>
+        <app-label>Catégorie Premier Padel (optionnel)</app-label>
+        @if (isLoadingEventCategories) {
+          <p class="text-sm text-gray-500 dark:text-gray-400">Chargement des catégories...</p>
+        } @else if (!tournamentCategoriesForForm.length) {
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Aucune catégorie définie pour ce tournoi. Ajoutez-en dans la page Tournois.
+          </p>
+        } @else {
+          <select
+            [(ngModel)]="form.tournamentCategoryId"
+            class="h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+          >
+            <option value="">— Aucune catégorie —</option>
+            @for (cat of tournamentCategoriesForForm; track cat.id) {
+              <option [value]="cat.id">{{ cat.label }} ({{ cat.slug }})</option>
+            }
+          </select>
+        }
+      </div>
+    }
 
     <div>
       <app-label>Description</app-label>

@@ -12,6 +12,10 @@ import {
   TournamentsService,
 } from '../../../../core/services/tournaments.service';
 import {
+  TournamentCategoriesService,
+  TournamentCategoryApiItem,
+} from '../../../../core/services/tournament-categories.service';
+import {
   EventApiItem,
   EventPayload,
   EventsService,
@@ -27,6 +31,8 @@ export type EventItem = {
   tournamentId: string | null;
   tournamentLabel: string | null;
   tournamentColor: string | null;
+  tournamentCategoryId: string | null;
+  tournamentCategoryLabel: string | null;
   descriptionHtml: string;
   coverImageUrl: string | null;
 };
@@ -38,6 +44,7 @@ type EventForm = {
   endAt: string;
   venue: string;
   tournamentId: string;
+  tournamentCategoryId: string;
   descriptionHtml: string;
   coverImageFile: File | null;
   coverImageName: string;
@@ -61,8 +68,13 @@ type EventForm = {
   templateUrl: './events-list.component.html',
 })
 export class EventsListComponent implements OnInit, OnDestroy {
+  /** Slug du tournoi pour lequel on propose les catégories dans le formulaire. */
+  private readonly premierPadelTournamentSlug = 'premier-padel';
+
   events: EventItem[] = [];
   tournaments: Tournament[] = [];
+  tournamentCategoriesForForm: TournamentCategoryApiItem[] = [];
+  isLoadingEventCategories = false;
 
   isLoading = false;
   errorMessage = '';
@@ -94,6 +106,7 @@ export class EventsListComponent implements OnInit, OnDestroy {
   constructor(
     private readonly eventsService: EventsService,
     private readonly tournamentsService: TournamentsService,
+    private readonly tournamentCategoriesService: TournamentCategoriesService,
   ) {}
 
   ngOnInit(): void {
@@ -157,6 +170,7 @@ export class EventsListComponent implements OnInit, OnDestroy {
     this.modalMode = 'create';
     this.editingId = null;
     this.form = this.createEmptyForm();
+    this.tournamentCategoriesForForm = [];
     this.modalErrorMessage = '';
     this.isModalOpen = true;
   }
@@ -172,6 +186,7 @@ export class EventsListComponent implements OnInit, OnDestroy {
       endAt: event.endAt ? this.toLocalInputValue(event.endAt) : '',
       venue: event.venue,
       tournamentId: event.tournamentId ?? '',
+      tournamentCategoryId: event.tournamentCategoryId ?? '',
       descriptionHtml: event.descriptionHtml,
       coverImageFile: null,
       coverImageName: '',
@@ -180,7 +195,31 @@ export class EventsListComponent implements OnInit, OnDestroy {
       removeCoverImage: false,
     };
     this.modalErrorMessage = '';
+    this.syncTournamentCategoriesForModal();
     this.isModalOpen = true;
+  }
+
+  onSelectTournamentForEvent(tournamentId: string): void {
+    this.form.tournamentId = tournamentId;
+    if (!tournamentId) {
+      this.form.tournamentCategoryId = '';
+      this.tournamentCategoriesForForm = [];
+      this.isLoadingEventCategories = false;
+      return;
+    }
+    const t = this.tournaments.find((x) => x.id === tournamentId);
+    if (t?.slug !== this.premierPadelTournamentSlug) {
+      this.form.tournamentCategoryId = '';
+      this.tournamentCategoriesForForm = [];
+      this.isLoadingEventCategories = false;
+      return;
+    }
+    this.loadTournamentCategoriesForForm(tournamentId);
+  }
+
+  isPremierPadelFormTournament(): boolean {
+    const t = this.tournaments.find((x) => x.id === this.form.tournamentId);
+    return !!t && t.slug === this.premierPadelTournamentSlug;
   }
 
   onTitleChange(value: string | number): void {
@@ -241,6 +280,19 @@ export class EventsListComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const selectedTournament = this.tournaments.find(
+      (t) => t.id === this.form.tournamentId,
+    );
+    const isPremierPadel =
+      !!selectedTournament &&
+      selectedTournament.slug === this.premierPadelTournamentSlug;
+    const tournamentCategoryId =
+      this.form.tournamentId &&
+      isPremierPadel &&
+      this.form.tournamentCategoryId.trim()
+        ? this.form.tournamentCategoryId.trim()
+        : null;
+
     const payload: EventPayload = {
       title,
       slug,
@@ -248,6 +300,7 @@ export class EventsListComponent implements OnInit, OnDestroy {
       endAt: endAtLocal ? this.toApiIso(endAtLocal) : null,
       venue,
       tournamentId: this.form.tournamentId || null,
+      tournamentCategoryId,
       descriptionHtml: this.form.descriptionHtml ?? '',
     };
 
@@ -398,6 +451,8 @@ export class EventsListComponent implements OnInit, OnDestroy {
       tournamentId: item.tournament?.id ?? null,
       tournamentLabel: item.tournament?.label ?? null,
       tournamentColor: item.tournament?.colorCode ?? null,
+      tournamentCategoryId: item.tournamentCategory?.id ?? null,
+      tournamentCategoryLabel: item.tournamentCategory?.label ?? null,
       descriptionHtml: item.descriptionHtml ?? '',
       coverImageUrl: item.coverImageUrl ?? null,
     };
@@ -437,6 +492,7 @@ export class EventsListComponent implements OnInit, OnDestroy {
       endAt: '',
       venue: '',
       tournamentId: '',
+      tournamentCategoryId: '',
       descriptionHtml: '',
       coverImageFile: null,
       coverImageName: '',
@@ -444,6 +500,37 @@ export class EventsListComponent implements OnInit, OnDestroy {
       coverPreviewUrl: null,
       removeCoverImage: false,
     };
+  }
+
+  private syncTournamentCategoriesForModal(): void {
+    const tid = this.form.tournamentId;
+    const t = this.tournaments.find((x) => x.id === tid);
+    if (!tid || t?.slug !== this.premierPadelTournamentSlug) {
+      this.tournamentCategoriesForForm = [];
+      this.isLoadingEventCategories = false;
+      return;
+    }
+    this.loadTournamentCategoriesForForm(tid);
+  }
+
+  private loadTournamentCategoriesForForm(tournamentId: string): void {
+    this.isLoadingEventCategories = true;
+    this.tournamentCategoriesService.findAll({ tournamentId }).subscribe({
+      next: (list) => {
+        this.tournamentCategoriesForForm = list;
+        this.isLoadingEventCategories = false;
+        if (
+          this.form.tournamentCategoryId &&
+          !list.some((c) => c.id === this.form.tournamentCategoryId)
+        ) {
+          this.form.tournamentCategoryId = '';
+        }
+      },
+      error: () => {
+        this.tournamentCategoriesForForm = [];
+        this.isLoadingEventCategories = false;
+      },
+    });
   }
 
   private parseApiError(err: HttpErrorResponse, fallback: string): string {

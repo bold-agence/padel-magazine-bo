@@ -10,6 +10,12 @@ export type EventTournamentRef = {
   slug?: string;
 };
 
+export type EventTournamentCategoryRef = {
+  id: string;
+  label: string;
+  slug: string;
+};
+
 export type EventApiItem = {
   id: string;
   title: string;
@@ -20,6 +26,7 @@ export type EventApiItem = {
   descriptionHtml?: string | null;
   coverImageUrl?: string | null;
   tournament?: EventTournamentRef | null;
+  tournamentCategory?: EventTournamentCategoryRef | null;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -31,6 +38,7 @@ export type EventPayload = {
   endAt?: string | null;
   venue: string;
   tournamentId?: string | null;
+  tournamentCategoryId?: string | null;
   descriptionHtml?: string | null;
 };
 
@@ -130,6 +138,16 @@ export class EventsService {
         formData.append('tournamentId', '');
       } else {
         formData.append('tournamentId', payload.tournamentId);
+      }
+    }
+    if (payload.tournamentCategoryId !== undefined) {
+      if (
+        payload.tournamentCategoryId === null ||
+        payload.tournamentCategoryId === ''
+      ) {
+        formData.append('tournamentCategoryId', '');
+      } else {
+        formData.append('tournamentCategoryId', payload.tournamentCategoryId);
       }
     }
     if (payload.descriptionHtml !== undefined) {
