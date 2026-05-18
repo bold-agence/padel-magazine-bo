@@ -40,6 +40,7 @@ import { TournamentsComponent } from './pages/admin/evenements/tournaments/tourn
 import { EventsListComponent } from './pages/admin/evenements/events-list/events-list.component';
 import { EventTagsComponent } from './pages/admin/evenements/tags/event-tags.component';
 import { LiveComponent } from './pages/admin/live/live.component';
+import { NewsletterSubscribersPageComponent } from './pages/admin/newsletter/newsletter-subscribers-page.component';
 
 export const routes: Routes = [
   {
@@ -214,6 +215,11 @@ export const routes: Routes = [
         path: 'client-content',
         component: ClientContentComponent,
         title: 'Breaking News & Pubs | Padel Magazine Admin',
+      },
+      {
+        path: 'newsletter/inscriptions',
+        component: NewsletterSubscribersPageComponent,
+        title: 'Newsletter - Inscriptions | Padel Magazine Admin',
       },
       {
         path: 'resultats/classements',

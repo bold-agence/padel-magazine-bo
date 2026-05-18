@@ -1,0 +1,100 @@
+<div class="space-y-6">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+        Inscriptions newsletter
+      </h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        Formulaire « Je m'abonne » de la sidebar du site public.
+      </p>
+      @if (!isLoading && !errorMessage) {
+        <p class="mt-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+          {{ totalCount }} inscription{{ totalCount > 1 ? 's' : '' }}
+        </p>
+      }
+    </div>
+    <app-button size="sm" variant="outline" [disabled]="isLoading" (btnClick)="load()">
+      Actualiser
+    </app-button>
+  </div>
+
+  @if (errorMessage) {
+    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      {{ errorMessage }}
+    </div>
+  }
+
+  <div class="overflow-x-auto rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-800/50">
+        <tr>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Date</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Prénom</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Nom</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">E-mail</th>
+          <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Téléphone</th>
+          <th class="px-4 py-3 text-center font-medium text-gray-600 dark:text-gray-300">E-mails</th>
+          <th class="px-4 py-3 text-center font-medium text-gray-600 dark:text-gray-300">Magazine papier</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (isLoading) {
+          <tr>
+            <td colspan="7" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+              Chargement...
+            </td>
+          </tr>
+        } @else if (!items.length) {
+          <tr>
+            <td colspan="7" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+              <p class="font-medium text-gray-700 dark:text-gray-300">Aucune inscription</p>
+              <p class="mt-1 text-xs">
+                Les inscriptions apparaîtront ici dès qu’un visiteur valide le formulaire sur le site.
+              </p>
+            </td>
+          </tr>
+        } @else {
+          @for (item of items; track item.id) {
+            <tr class="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50/80 dark:hover:bg-gray-800/30">
+              <td class="px-4 py-3 whitespace-nowrap text-gray-700 dark:text-gray-300">
+                {{ item.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+              </td>
+              <td class="px-4 py-3 text-gray-900 dark:text-white">{{ item.firstName }}</td>
+              <td class="px-4 py-3 text-gray-900 dark:text-white">{{ item.lastName }}</td>
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+                <a
+                  [href]="'mailto:' + item.email"
+                  class="text-brand-600 hover:underline dark:text-brand-400"
+                  >{{ item.email }}</a
+                >
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap text-gray-700 dark:text-gray-300">
+                <a [href]="'tel:' + item.phone" class="hover:underline">{{ item.phone }}</a>
+              </td>
+              <td class="px-4 py-3 text-center">
+                @if (item.acceptsEmails) {
+                  <span
+                    class="inline-flex rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                    >Oui</span
+                  >
+                } @else {
+                  <span class="text-gray-400">Non</span>
+                }
+              </td>
+              <td class="px-4 py-3 text-center">
+                @if (item.acceptsPrintMagazine) {
+                  <span
+                    class="inline-flex rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                    >Oui</span
+                  >
+                } @else {
+                  <span class="text-gray-400">Non</span>
+                }
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

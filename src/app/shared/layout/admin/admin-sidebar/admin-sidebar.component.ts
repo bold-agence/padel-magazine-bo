@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { filter } from 'rxjs';
 import { SidebarService } from '../../../services/sidebar.service';
 import { SafeHtmlPipe } from '../../../pipe/safe-html.pipe';
 import { AdminSidebarWidgetComponent } from './admin-sidebar-widget.component';
@@ -24,7 +25,7 @@ type NavItem = {
   ],
   templateUrl: './admin-sidebar.component.html',
 })
-export class AdminSidebarComponent {
+export class AdminSidebarComponent implements OnInit {
   navItems: NavItem[] = [
     {
       name: 'Dashboard',
@@ -45,6 +46,11 @@ export class AdminSidebarComponent {
       name: 'Breaking News & Pubs',
       path: '/admin/client-content',
       icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none"><path d="M4.75 7.75C4.75 6.50736 5.75736 5.5 7 5.5H17C18.2426 5.5 19.25 6.50736 19.25 7.75V16.25C19.25 17.4926 18.2426 18.5 17 18.5H7C5.75736 18.5 4.75 17.4926 4.75 16.25V7.75Z" stroke="currentColor" stroke-width="1.5"/><path d="M8 9.5H16M8 12.5H13M8 15.5H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+    },
+    {
+      name: 'Newsletter',
+      path: '/admin/newsletter/inscriptions',
+      icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none"><rect x="3.75" y="5.75" width="16.5" height="14.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/><path d="M3.75 8.25L12 13.25L20.25 8.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
     },
     {
       name: 'Joueurs',
@@ -133,6 +139,27 @@ export class AdminSidebarComponent {
     this.isExpanded$ = this.sidebarService.isExpanded$;
     this.isMobileOpen$ = this.sidebarService.isMobileOpen$;
     this.isHovered$ = this.sidebarService.isHovered$;
+  }
+
+  ngOnInit(): void {
+    this.syncOpenSubmenu();
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe(() => this.syncOpenSubmenu());
+  }
+
+  private syncOpenSubmenu(): void {
+    const url = this.router.url.split('?')[0];
+    for (const item of this.navItems) {
+      if (
+        item.subItems?.some(
+          (sub) => url === sub.path || url.startsWith(`${sub.path}/`),
+        )
+      ) {
+        this.openSubmenu = item.name;
+        return;
+      }
+    }
   }
 
   isActive(path: string): boolean {
