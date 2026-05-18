@@ -16,6 +16,11 @@ export type EventTournamentCategoryRef = {
   slug: string;
 };
 
+export type EventTagRef = {
+  id: string;
+  name: string;
+};
+
 export type EventApiItem = {
   id: string;
   title: string;
@@ -27,6 +32,7 @@ export type EventApiItem = {
   coverImageUrl?: string | null;
   tournament?: EventTournamentRef | null;
   tournamentCategory?: EventTournamentCategoryRef | null;
+  tags?: EventTagRef[];
   createdAt?: string;
   updatedAt?: string;
 };
@@ -40,6 +46,7 @@ export type EventPayload = {
   tournamentId?: string | null;
   tournamentCategoryId?: string | null;
   descriptionHtml?: string | null;
+  tags?: string[];
 };
 
 export type UpdateEventOptions = {
@@ -61,10 +68,16 @@ export class EventsService {
 
   constructor(private readonly http: HttpClient) {}
 
-  findAll(filters?: { tournamentId?: string | null }): Observable<EventApiItem[]> {
+  findAll(filters?: {
+    tournamentId?: string | null;
+    tagId?: string | null;
+  }): Observable<EventApiItem[]> {
     let params = new HttpParams();
     if (filters?.tournamentId) {
       params = params.set('tournamentId', filters.tournamentId);
+    }
+    if (filters?.tagId) {
+      params = params.set('tagId', filters.tagId);
     }
     return this.http
       .get<ApiEnvelope<EventApiItem[]> | EventApiItem[]>(this.apiUrl, { params })
@@ -152,6 +165,9 @@ export class EventsService {
     }
     if (payload.descriptionHtml !== undefined) {
       formData.append('descriptionHtml', payload.descriptionHtml ?? '');
+    }
+    if (payload.tags !== undefined) {
+      formData.append('tags', JSON.stringify(payload.tags));
     }
 
     return formData;

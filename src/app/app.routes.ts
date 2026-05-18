@@ -38,6 +38,7 @@ import { LatestResultScopesPageComponent } from './pages/admin/resultats/latest-
 import { LatestResultsPageComponent } from './pages/admin/resultats/latest-results/latest-results-page.component';
 import { TournamentsComponent } from './pages/admin/evenements/tournaments/tournaments.component';
 import { EventsListComponent } from './pages/admin/evenements/events-list/events-list.component';
+import { EventTagsComponent } from './pages/admin/evenements/tags/event-tags.component';
 import { LiveComponent } from './pages/admin/live/live.component';
 
 export const routes: Routes = [
@@ -243,6 +244,11 @@ export const routes: Routes = [
         path: 'evenements/liste',
         component: EventsListComponent,
         title: 'Evenements - Liste | Padel Magazine Admin',
+      },
+      {
+        path: 'evenements/tags',
+        component: EventTagsComponent,
+        title: 'Evenements - Tags | Padel Magazine Admin',
       },
       {
         path: 'live',

@@ -20,6 +20,7 @@ import {
   EventPayload,
   EventsService,
 } from '../../../../core/services/events.service';
+import { EventTag, EventTagsService } from '../../../../core/services/event-tags.service';
 
 export type EventItem = {
   id: string;
@@ -35,6 +36,7 @@ export type EventItem = {
   tournamentCategoryLabel: string | null;
   descriptionHtml: string;
   coverImageUrl: string | null;
+  tagNames: string[];
 };
 
 type EventForm = {
@@ -102,9 +104,14 @@ export class EventsListComponent implements OnInit, OnDestroy {
   ];
 
   form: EventForm = this.createEmptyForm();
+  allTags: EventTag[] = [];
+  isLoadingTags = false;
+  selectedTags: string[] = [];
+  tagInput = '';
 
   constructor(
     private readonly eventsService: EventsService,
+    private readonly eventTagsService: EventTagsService,
     private readonly tournamentsService: TournamentsService,
     private readonly tournamentCategoriesService: TournamentCategoriesService,
   ) {}
@@ -112,7 +119,48 @@ export class EventsListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.editor = new Editor();
     this.loadTournaments();
+    this.loadTags();
     this.loadEvents();
+  }
+
+  loadTags(): void {
+    this.isLoadingTags = true;
+    this.eventTagsService.findAll().subscribe({
+      next: (tags) => {
+        this.allTags = tags;
+        this.isLoadingTags = false;
+      },
+      error: () => {
+        this.allTags = [];
+        this.isLoadingTags = false;
+      },
+    });
+  }
+
+  getSuggestedTags(): string[] {
+    const selected = new Set(this.selectedTags);
+    return this.allTags
+      .map((t) => t.name)
+      .filter((name) => !selected.has(name));
+  }
+
+  addTagFromInput(): void {
+    const name = this.tagInput.trim();
+    if (!name) return;
+    if (!this.selectedTags.includes(name)) {
+      this.selectedTags = [...this.selectedTags, name];
+    }
+    this.tagInput = '';
+  }
+
+  addExistingTag(name: string): void {
+    if (!this.selectedTags.includes(name)) {
+      this.selectedTags = [...this.selectedTags, name];
+    }
+  }
+
+  removeTag(name: string): void {
+    this.selectedTags = this.selectedTags.filter((t) => t !== name);
   }
 
   ngOnDestroy(): void {
@@ -170,6 +218,8 @@ export class EventsListComponent implements OnInit, OnDestroy {
     this.modalMode = 'create';
     this.editingId = null;
     this.form = this.createEmptyForm();
+    this.selectedTags = [];
+    this.tagInput = '';
     this.tournamentCategoriesForForm = [];
     this.modalErrorMessage = '';
     this.isModalOpen = true;
@@ -194,6 +244,8 @@ export class EventsListComponent implements OnInit, OnDestroy {
       coverPreviewUrl: null,
       removeCoverImage: false,
     };
+    this.selectedTags = [...event.tagNames];
+    this.tagInput = '';
     this.modalErrorMessage = '';
     this.syncTournamentCategoriesForModal();
     this.isModalOpen = true;
@@ -302,6 +354,7 @@ export class EventsListComponent implements OnInit, OnDestroy {
       tournamentId: this.form.tournamentId || null,
       tournamentCategoryId,
       descriptionHtml: this.form.descriptionHtml ?? '',
+      tags: this.selectedTags.map((t) => t.trim()).filter(Boolean),
     };
 
     this.isSaving = true;
@@ -455,6 +508,7 @@ export class EventsListComponent implements OnInit, OnDestroy {
       tournamentCategoryLabel: item.tournamentCategory?.label ?? null,
       descriptionHtml: item.descriptionHtml ?? '',
       coverImageUrl: item.coverImageUrl ?? null,
+      tagNames: (item.tags ?? []).map((t) => t.name),
     };
   }
 

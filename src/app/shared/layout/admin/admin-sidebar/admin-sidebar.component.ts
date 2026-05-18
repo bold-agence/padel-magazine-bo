@@ -92,6 +92,7 @@ export class AdminSidebarComponent {
       subItems: [
         { name: 'Tournois', path: '/admin/evenements/tournois' },
         { name: 'Liste évènements', path: '/admin/evenements/liste' },
+        { name: 'Tags événements', path: '/admin/evenements/tags' },
       ],
     },
     {
