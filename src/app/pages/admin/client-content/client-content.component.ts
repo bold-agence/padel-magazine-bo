@@ -6,6 +6,13 @@ import { InputFieldComponent } from '../../../shared/components/form/input/input
 import { LabelComponent } from '../../../shared/components/form/label/label.component';
 import { ModalComponent } from '../../../shared/components/ui/modal/modal.component';
 import {
+  DEFAULT_PUBLIC_PAGE_KEY,
+  isSidebarAdSlot,
+  PUBLIC_PAGE_KEYS,
+  PUBLIC_PAGE_LABELS,
+  PublicPageKey,
+} from '../../../core/constants/public-page-keys';
+import {
   AdImageItem,
   AdSlot,
   BreakingNewsItem,
@@ -22,6 +29,7 @@ type BreakingNewsForm = {
 type AdImageForm = {
   title: string;
   slot: AdSlot;
+  pageKey: PublicPageKey;
   imageUrl: string;
   targetUrl: string;
   isActive: boolean;
@@ -58,8 +66,54 @@ export class ClientContentComponent implements OnInit {
   adForm: AdImageForm = this.getEmptyAdForm();
   adImageFile: File | null = null;
   adImageFileName = '';
+  adPageFilter: 'all' | PublicPageKey = 'all';
+  adSlotFilter: 'all' | AdSlot = 'all';
+
+  protected readonly publicPageOptions = PUBLIC_PAGE_KEYS.map((key) => ({
+    key,
+    label: PUBLIC_PAGE_LABELS[key],
+  }));
+
+  protected readonly adPageFilterOptions: { key: 'all' | PublicPageKey; label: string }[] = [
+    { key: 'all', label: 'Toutes les pages' },
+    ...PUBLIC_PAGE_KEYS.map((key) => ({
+      key,
+      label: PUBLIC_PAGE_LABELS[key],
+    })),
+  ];
+
+  protected readonly adSlotFilterOptions: { key: 'all' | AdSlot; label: string }[] = [
+    { key: 'all', label: 'Tous les emplacements' },
+    { key: 'header_main', label: 'Header' },
+    { key: 'home_leaderboard', label: 'Home (leaderboard)' },
+    { key: 'sidebar_top', label: 'Sidebar haut' },
+    { key: 'sidebar_bottom', label: 'Sidebar bas' },
+  ];
 
   constructor(private readonly clientContentService: ClientContentService) {}
+
+  protected get filteredAdImages(): AdImageItem[] {
+    return this.adImages.filter((item) => {
+      const pageKey = item.pageKey ?? DEFAULT_PUBLIC_PAGE_KEY;
+      const matchesPage =
+        this.adPageFilter === 'all' || pageKey === this.adPageFilter;
+      const matchesSlot = this.adSlotFilter === 'all' || item.slot === this.adSlotFilter;
+      return matchesPage && matchesSlot;
+    });
+  }
+
+  protected resetAdFilters(): void {
+    this.adPageFilter = 'all';
+    this.adSlotFilter = 'all';
+  }
+
+  protected get isSidebarAdForm(): boolean {
+    return isSidebarAdSlot(this.adForm.slot);
+  }
+
+  protected pageLabel(pageKey: PublicPageKey): string {
+    return PUBLIC_PAGE_LABELS[pageKey] ?? pageKey;
+  }
 
   ngOnInit(): void {
     this.loadData();
@@ -189,6 +243,7 @@ export class ClientContentComponent implements OnInit {
     this.adForm = {
       title: item.title,
       slot: item.slot,
+      pageKey: item.pageKey ?? DEFAULT_PUBLIC_PAGE_KEY,
       imageUrl: item.imageUrl,
       targetUrl: item.targetUrl ?? '',
       isActive: item.isActive,
@@ -225,15 +280,21 @@ export class ClientContentComponent implements OnInit {
     this.successMessage = '';
     this.modalErrorMessage = '';
 
-    this.clientContentService.findAllAdImages(this.adForm.slot).subscribe({
+    const pageKey = isSidebarAdSlot(this.adForm.slot)
+      ? this.adForm.pageKey
+      : DEFAULT_PUBLIC_PAGE_KEY;
+
+    this.clientContentService.findAllAdImages(this.adForm.slot, false, pageKey).subscribe({
       next: (existingInSlot) => {
         const conflict = existingInSlot.find((item) => item.id !== this.editingAdId);
         if (conflict) {
           this.isSaving = false;
-          this.modalErrorMessage = 'Ce slot est deja utilise.';
+          this.modalErrorMessage = isSidebarAdSlot(this.adForm.slot)
+            ? `Une publicité existe déjà pour ce slot sur la page « ${this.pageLabel(pageKey)} ».`
+            : 'Ce slot est déjà utilisé.';
           return;
         }
-        this.continueSaveAdImage(title);
+        this.continueSaveAdImage(title, pageKey);
       },
       error: (error: unknown) => {
         this.isSaving = false;
@@ -245,13 +306,14 @@ export class ClientContentComponent implements OnInit {
     });
   }
 
-  private continueSaveAdImage(title: string): void {
+  private continueSaveAdImage(title: string, pageKey: PublicPageKey): void {
     this.isSaving = true;
 
     const persist = (imageUrl: string) => {
       const payload = {
         title,
         slot: this.adForm.slot,
+        pageKey,
         imageUrl,
         targetUrl: this.adForm.targetUrl.trim() || undefined,
         isActive: this.adForm.isActive,
@@ -331,7 +393,8 @@ export class ClientContentComponent implements OnInit {
   private getEmptyAdForm(): AdImageForm {
     return {
       title: '',
-      slot: 'header_main',
+      slot: 'sidebar_top',
+      pageKey: DEFAULT_PUBLIC_PAGE_KEY,
       imageUrl: '',
       targetUrl: '',
       isActive: true,

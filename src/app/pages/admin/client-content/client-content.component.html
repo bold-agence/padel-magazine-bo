@@ -3,7 +3,7 @@
     <div>
       <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Contenu client</h1>
       <p class="text-sm text-gray-500 dark:text-gray-400">
-        Gestion des breaking news du header et des images publicitaires header/sidebar.
+        Breaking news, bannières header/accueil et publicités sidebar par page (avec repli sur les encarts par défaut).
       </p>
     </div>
   </div>
@@ -39,7 +39,7 @@
         <tbody>
           @if (isLoading) {
             <tr>
-              <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Chargement...</td>
+              <td colspan="6" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Chargement...</td>
             </tr>
           } @else if (!breakingNews.length) {
             <tr>
@@ -76,16 +76,55 @@
   </div>
 
   <div class="space-y-4 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Images publicitaires</h2>
       <app-button size="sm" (btnClick)="openCreateAdModal()">Ajouter</app-button>
     </div>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+      <div class="min-w-[200px] flex-1 sm:max-w-xs">
+        <app-label>Filtrer par page</app-label>
+        <select
+          [(ngModel)]="adPageFilter"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 outline-none focus:border-brand-300 dark:border-gray-700 dark:text-white/90"
+        >
+          @for (option of adPageFilterOptions; track option.key) {
+            <option [value]="option.key">{{ option.label }}</option>
+          }
+        </select>
+      </div>
+      <div class="min-w-[200px] flex-1 sm:max-w-xs">
+        <app-label>Filtrer par emplacement</app-label>
+        <select
+          [(ngModel)]="adSlotFilter"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 outline-none focus:border-brand-300 dark:border-gray-700 dark:text-white/90"
+        >
+          @for (option of adSlotFilterOptions; track option.key) {
+            <option [value]="option.key">{{ option.label }}</option>
+          }
+        </select>
+      </div>
+      @if (adPageFilter !== 'all' || adSlotFilter !== 'all') {
+        <app-button size="sm" variant="outline" (btnClick)="resetAdFilters()">
+          Réinitialiser
+        </app-button>
+      }
+    </div>
+
+    @if (!isLoading && adImages.length && filteredAdImages.length !== adImages.length) {
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        {{ filteredAdImages.length }} encart{{ filteredAdImages.length > 1 ? 's' : '' }} sur
+        {{ adImages.length }}
+      </p>
+    }
+
     <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800">
       <table class="min-w-full text-sm">
         <thead class="bg-gray-50 dark:bg-gray-800/50">
           <tr>
             <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Titre</th>
             <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Slot</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Page</th>
             <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Image</th>
             <th class="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Actif</th>
             <th class="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Actions</th>
@@ -94,17 +133,26 @@
         <tbody>
           @if (isLoading) {
             <tr>
-              <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Chargement...</td>
+              <td colspan="6" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Chargement...</td>
             </tr>
           } @else if (!adImages.length) {
             <tr>
-              <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Aucun encart.</td>
+              <td colspan="6" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Aucun encart.</td>
+            </tr>
+          } @else if (!filteredAdImages.length) {
+            <tr>
+              <td colspan="6" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+                Aucun encart pour ces filtres.
+              </td>
             </tr>
           } @else {
-            @for (item of adImages; track item.id) {
+            @for (item of filteredAdImages; track item.id) {
               <tr class="border-t border-gray-100 dark:border-gray-800">
                 <td class="px-4 py-3 text-gray-900 dark:text-white">{{ item.title }}</td>
                 <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ item.slot }}</td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
+                  {{ pageLabel(item.pageKey ?? 'default') }}
+                </td>
                 <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ item.imageUrl }}</td>
                 <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ item.isActive ? 'Oui' : 'Non' }}</td>
                 <td class="px-4 py-3">
@@ -191,6 +239,22 @@
         <option value="sidebar_bottom">Sidebar bas</option>
       </select>
     </div>
+    @if (isSidebarAdForm) {
+      <div>
+        <app-label>Page du site</app-label>
+        <select
+          [(ngModel)]="adForm.pageKey"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 outline-none focus:border-brand-300 dark:border-gray-700 dark:text-white/90"
+        >
+          @for (page of publicPageOptions; track page.key) {
+            <option [value]="page.key">{{ page.label }}</option>
+          }
+        </select>
+        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          « Par défaut » s’affiche sur les pages sans encart dédié.
+        </p>
+      </div>
+    }
     <div>
       <app-label>Image (fichier)</app-label>
       <input

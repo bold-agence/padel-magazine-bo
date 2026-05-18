@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { PublicPageKey } from '../constants/public-page-keys';
 
 export type BreakingNewsItem = {
   id: string;
@@ -21,6 +22,7 @@ export type AdImageItem = {
   id: string;
   title: string;
   slot: AdSlot;
+  pageKey: PublicPageKey;
   imageUrl: string;
   targetUrl?: string | null;
   isActive: boolean;
@@ -36,6 +38,7 @@ export type CreateBreakingNewsPayload = {
 export type CreateAdImagePayload = {
   title: string;
   slot: AdSlot;
+  pageKey?: PublicPageKey;
   imageUrl: string;
   targetUrl?: string;
   isActive?: boolean;
@@ -107,10 +110,14 @@ export class ClientContentService {
   findAllAdImages(
     slot?: AdSlot,
     activeOnly = false,
+    pageKey?: PublicPageKey,
   ): Observable<AdImageItem[]> {
     const params = new URLSearchParams();
     if (slot) {
       params.set('slot', slot);
+    }
+    if (pageKey) {
+      params.set('pageKey', pageKey);
     }
     params.set('activeOnly', String(activeOnly));
     return this.http
