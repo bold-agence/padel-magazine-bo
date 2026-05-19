@@ -151,7 +151,7 @@
                 <td class="px-4 py-3 text-gray-900 dark:text-white">{{ item.title }}</td>
                 <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ item.slot }}</td>
                 <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
-                  {{ pageLabel(item.pageKey ?? 'default') }}
+                  {{ pageLabel(item.pageKey) }}
                 </td>
                 <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ item.imageUrl }}</td>
                 <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ item.isActive ? 'Oui' : 'Non' }}</td>
@@ -257,12 +257,14 @@
     }
     <div>
       <app-label>Image (fichier)</app-label>
-      <input
-        type="file"
-        accept="image/*"
-        (change)="onAdImageSelected($event)"
-        class="block w-full rounded-lg border border-gray-300 p-2 text-sm dark:border-gray-700"
-      />
+      @for (fileInputKey of [adImageFileInputKey]; track fileInputKey) {
+        <input
+          type="file"
+          accept="image/*"
+          (change)="onAdImageSelected($event)"
+          class="block w-full rounded-lg border border-gray-300 p-2 text-sm dark:border-gray-700"
+        />
+      }
       @if (adImageFileName) {
         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Fichier selectionne: {{ adImageFileName }}</p>
       } @else if (adForm.imageUrl) {

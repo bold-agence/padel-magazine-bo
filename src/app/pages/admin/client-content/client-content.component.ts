@@ -66,6 +66,7 @@ export class ClientContentComponent implements OnInit {
   adForm: AdImageForm = this.getEmptyAdForm();
   adImageFile: File | null = null;
   adImageFileName = '';
+  adImageFileInputKey = 0;
   adPageFilter: 'all' | PublicPageKey = 'all';
   adSlotFilter: 'all' | AdSlot = 'all';
 
@@ -232,8 +233,7 @@ export class ClientContentComponent implements OnInit {
   openCreateAdModal(): void {
     this.editingAdId = null;
     this.adForm = this.getEmptyAdForm();
-    this.adImageFile = null;
-    this.adImageFileName = '';
+    this.resetAdImageFileSelection();
     this.modalErrorMessage = '';
     this.isAdModalOpen = true;
   }
@@ -248,8 +248,7 @@ export class ClientContentComponent implements OnInit {
       targetUrl: item.targetUrl ?? '',
       isActive: item.isActive,
     };
-    this.adImageFile = null;
-    this.adImageFileName = '';
+    this.resetAdImageFileSelection();
     this.modalErrorMessage = '';
     this.isAdModalOpen = true;
   }
@@ -257,6 +256,7 @@ export class ClientContentComponent implements OnInit {
   closeAdModal(): void {
     if (this.isSaving) return;
     this.isAdModalOpen = false;
+    this.resetAdImageFileSelection();
     this.modalErrorMessage = '';
   }
 
@@ -323,9 +323,13 @@ export class ClientContentComponent implements OnInit {
         : this.clientContentService.createAdImage(payload);
       request$.subscribe({
         next: () => {
+          const wasEdit = !!this.editingAdId;
           this.isSaving = false;
           this.isAdModalOpen = false;
-          this.successMessage = this.editingAdId
+          this.editingAdId = null;
+          this.adForm = this.getEmptyAdForm();
+          this.resetAdImageFileSelection();
+          this.successMessage = wasEdit
             ? 'Publicite mise a jour.'
             : 'Publicite creee.';
           this.loadData();
@@ -399,6 +403,12 @@ export class ClientContentComponent implements OnInit {
       targetUrl: '',
       isActive: true,
     };
+  }
+
+  private resetAdImageFileSelection(): void {
+    this.adImageFile = null;
+    this.adImageFileName = '';
+    this.adImageFileInputKey += 1;
   }
 
   private parseApiError(error: unknown, fallback: string): string {
